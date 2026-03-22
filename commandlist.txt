@@ -1,5 +1,6 @@
 new - Start a new game 
-join - Join the current game 
+addbot - Add one or more bot players to the current game
+join - Join the current game
 start - Start the game 
 leave - Leave the game you're in 
 close - Close the game lobby 

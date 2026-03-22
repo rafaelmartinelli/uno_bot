@@ -45,6 +45,7 @@ class Game(object):
         self.last_card = None
 
         self.deck = Deck()
+        self.bot_job = None
 
         self.logger = logging.getLogger(__name__)
 

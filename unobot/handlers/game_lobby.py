@@ -8,6 +8,7 @@ from unobot.infra.config import DEFAULT_GAMEMODE
 from unobot.common.errors import AlreadyJoinedError, DeckEmptyError, LobbyClosedError, NoGameInChatError, NotEnoughPlayersError
 from unobot.i18n.internationalization import _, __, user_locale
 from unobot.infra.shared_vars import gm
+from unobot.services.actions import continue_game
 from unobot.ui.simple_commands import help_handler
 from unobot.common.utils import display_name, send_async
 
@@ -117,6 +118,7 @@ def leave_game(update: Update, context: CallbackContext):
         return
 
     game = player.game
+    was_current_player = player is game.current_player
 
     try:
         gm.leave_game(user, chat)
@@ -132,14 +134,17 @@ def leave_game(update: Update, context: CallbackContext):
         send_async(context.bot, chat.id, text=__("Game ended!", multi=game.translate))
     else:
         if game.started:
-            send_async(
-                context.bot,
-                chat.id,
-                text=__("Okay. Next Player: {name}", multi=game.translate).format(
-                    name=display_name(game.current_player.user)
-                ),
-                reply_to_message_id=update.message.message_id,
-            )
+            if not was_current_player or not getattr(game.current_player.user, 'is_bot', False):
+                send_async(
+                    context.bot,
+                    chat.id,
+                    text=__("Okay. Next Player: {name}", multi=game.translate).format(
+                        name=display_name(game.current_player.user)
+                    ),
+                    reply_to_message_id=update.message.message_id,
+                )
+            if was_current_player:
+                continue_game(context.bot, game, context.job_queue, announce_next_player=False)
         else:
             send_async(
                 context.bot,

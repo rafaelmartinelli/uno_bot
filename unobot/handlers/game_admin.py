@@ -4,11 +4,97 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from unobot.common.errors import NoGameInChatError, NotEnoughPlayersError
+from unobot.common.errors import DeckEmptyError, NoGameInChatError, NotEnoughPlayersError
 from unobot.i18n.internationalization import _, __, user_locale
 from unobot.infra.shared_vars import gm
+from unobot.services.actions import continue_game
 from unobot.ui.simple_commands import help_handler
 from unobot.common.utils import display_name, send_async, user_is_creator_or_admin
+
+
+@user_locale
+def add_bot(update: Update, context: CallbackContext):
+    """Handler for the /addbot command."""
+    if update.message.chat.type == 'private':
+        help_handler(update, context)
+        return
+
+    chat = update.message.chat
+    user = update.message.from_user
+
+    try:
+        game = gm.chatid_games[chat.id][-1]
+    except (KeyError, IndexError):
+        send_async(
+            context.bot,
+            chat.id,
+            text=_("There is no running game in this chat."),
+            reply_to_message_id=update.message.message_id,
+        )
+        return
+
+    if not user_is_creator_or_admin(user, game, context.bot, chat):
+        send_async(
+            context.bot,
+            chat.id,
+            text=_("Only the game creator ({name}) and admin can do that.").format(
+                name=game.starter.first_name
+            ),
+            reply_to_message_id=update.message.message_id,
+        )
+        return
+
+    count = 1
+    if context.args:
+        try:
+            count = int(context.args[0])
+            if count < 1:
+                raise ValueError
+        except ValueError:
+            send_async(
+                context.bot,
+                chat.id,
+                text=_("Usage: /addbot [number of bots]"),
+                reply_to_message_id=update.message.message_id,
+            )
+            return
+
+    added_players = []
+    deck_exhausted = False
+    for bot_index in range(count):
+        try:
+            added_players.append(gm.add_bot(chat))
+        except DeckEmptyError:
+            deck_exhausted = True
+            break
+
+    if not added_players:
+        send_async(
+            context.bot,
+            chat.id,
+            text=_("There are not enough cards left in the deck for new players to join."),
+            reply_to_message_id=update.message.message_id,
+        )
+        return
+
+    if len(added_players) == 1:
+        message = _("Added bot player {name}.").format(name=display_name(added_players[0].user))
+    else:
+        names = ', '.join(display_name(player.user) for player in added_players)
+        message = _("Added {count} bot players: {names}").format(count=len(added_players), names=names)
+
+    if deck_exhausted:
+        message += '\n' + _("Stopped early because there are not enough cards left in the deck.")
+
+    send_async(
+        context.bot,
+        chat.id,
+        text=message,
+        reply_to_message_id=update.message.message_id,
+    )
+
+    if game.started:
+        continue_game(context.bot, game, context.job_queue, announce_next_player=False)
 
 
 @user_locale
@@ -100,6 +186,7 @@ def kick_player(update: Update, context: CallbackContext):
         return
 
     kicked = update.message.reply_to_message.from_user
+    was_current_player = kicked.id == game.current_player.user.id
     try:
         gm.leave_game(kicked, chat)
     except NoGameInChatError:
@@ -119,14 +206,17 @@ def kick_player(update: Update, context: CallbackContext):
         return
 
     send_async(context.bot, chat.id, text=_("{0} was kicked by {1}".format(display_name(kicked), display_name(user))))
-    send_async(
-        context.bot,
-        chat.id,
-        text=__("Okay. Next Player: {name}", multi=game.translate).format(
-            name=display_name(game.current_player.user)
-        ),
-        reply_to_message_id=update.message.message_id,
-    )
+    if not was_current_player or not getattr(game.current_player.user, 'is_bot', False):
+        send_async(
+            context.bot,
+            chat.id,
+            text=__("Okay. Next Player: {name}", multi=game.translate).format(
+                name=display_name(game.current_player.user)
+            ),
+            reply_to_message_id=update.message.message_id,
+        )
+    if was_current_player:
+        continue_game(context.bot, game, context.job_queue, announce_next_player=False)
 
 
 @user_locale

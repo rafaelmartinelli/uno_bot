@@ -6,6 +6,7 @@ from telegram.ext import CallbackQueryHandler, ChosenInlineResultHandler, Comman
 from unobot.ui import settings
 from unobot.ui import simple_commands
 from unobot.handlers.game_admin import (
+    add_bot,
     close_game,
     disable_translations,
     enable_translations,
@@ -27,6 +28,7 @@ def register_handlers():
     dispatcher.add_handler(CallbackQueryHandler(select_game))
     dispatcher.add_handler(CommandHandler('start', start_game))
     dispatcher.add_handler(CommandHandler('new', new_game))
+    dispatcher.add_handler(CommandHandler(['addbot', 'add_bot'], add_bot))
     dispatcher.add_handler(CommandHandler('kill', kill_game))
     dispatcher.add_handler(CommandHandler('join', join_game))
     dispatcher.add_handler(CommandHandler('leave', leave_game))

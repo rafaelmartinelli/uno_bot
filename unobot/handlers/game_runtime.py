@@ -8,9 +8,9 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
-from unobot.services.actions import do_skip, start_player_countdown
+from unobot.services.actions import continue_game, do_skip
 from unobot.infra.config import MIN_PLAYERS
-from unobot.common.errors import NoGameInChatError, NotEnoughPlayersError
+from unobot.common.errors import NotEnoughPlayersError
 from unobot.i18n.internationalization import _, __, game_locales, user_locale
 from unobot.infra.shared_vars import gm
 from unobot.ui.simple_commands import help_handler
@@ -60,11 +60,15 @@ def status_update(update: Update, context: CallbackContext):
 
     if update.message.left_chat_member:
         user = update.message.left_chat_member
+        player = gm.player_for_user_in_chat(user, chat)
+        if player is None:
+            return
+
+        game = player.game
+        was_current_player = player is game.current_player
+
         try:
             gm.leave_game(user, chat)
-            game = gm.player_for_user_in_chat(user, chat).game
-        except NoGameInChatError:
-            return
         except NotEnoughPlayersError:
             gm.end_game(chat, user)
             send_async(context.bot, chat.id, text=__("Game ended!", multi=game.translate if game else False))
@@ -76,6 +80,8 @@ def status_update(update: Update, context: CallbackContext):
                     name=display_name(user)
                 ),
             )
+            if game.started and was_current_player:
+                continue_game(context.bot, game, context.job_queue)
 
 
 @game_locales
@@ -124,7 +130,7 @@ def start_game(update: Update, context: CallbackContext):
                 text=first_message,
                 reply_markup=InlineKeyboardMarkup(choice),
             )
-            start_player_countdown(context.bot, game, context.job_queue)
+            continue_game(context.bot, game, context.job_queue, announce_next_player=False)
     elif len(context.args) and context.args[0] == 'select':
         players = gm.userid_players[update.message.from_user.id]
         groups = []
@@ -169,5 +175,5 @@ def skip_player(update: Update, context: CallbackContext):
             reply_to_message_id=update.message.message_id,
         )
     else:
-        do_skip(context.bot, player)
+        do_skip(context.bot, player, context.job_queue)
 

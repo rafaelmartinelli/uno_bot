@@ -1,27 +1,204 @@
 import logging
+from dataclasses import dataclass
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from unobot.core import card as c
+from unobot.core.game import Game
+from unobot.core.player import Player
 from pony.orm import db_session
 
 from telegram.ext import CallbackContext
 from apscheduler.jobstores.base import JobLookupError
 
-from unobot.infra.config import TIME_REMOVAL_AFTER_SKIP, MIN_FAST_TURN_TIME
+from unobot.bots import get_strategy, is_bot_user
+from unobot.infra.config import BOT_ACTION_DELAY, TIME_REMOVAL_AFTER_SKIP, MIN_FAST_TURN_TIME
 from unobot.common.errors import DeckEmptyError, NotEnoughPlayersError
 from unobot.i18n.internationalization import __
 from unobot.infra.shared_vars import gm
 from unobot.persistence.user_setting import UserSetting
-from unobot.common.utils import send_async, display_name, game_is_running
+from unobot.common.utils import send_async, display_name, display_color_group, game_is_running
 
 logger = logging.getLogger(__name__)
+BOT_ACTION_DELAY_SECONDS = max(0.0, BOT_ACTION_DELAY)
 
-class Countdown(object):
-    player = None
-    job_queue = None
+@dataclass(slots=True)
+class Countdown:
+    player: Player
+    job_queue: object
 
-    def __init__(self, player, job_queue):
-        self.player = player
-        self.job_queue = job_queue
+
+@dataclass(slots=True)
+class BotTurnContext:
+    game: Game
+    job_queue: object
+
+
+def _clear_game_job(game):
+    if not game.job:
+        return
+
+    try:
+        game.job.schedule_removal()
+    except JobLookupError:
+        pass
+    finally:
+        game.job = None
+
+
+def _clear_bot_job(game):
+    if not getattr(game, 'bot_job', None):
+        return
+
+    try:
+        game.bot_job.schedule_removal()
+    except JobLookupError:
+        pass
+    finally:
+        game.bot_job = None
+
+
+def _announce_next_player(bot, game):
+    choice = [[InlineKeyboardButton(text=__("Make your choice!", multi=game.translate), switch_inline_query_current_chat='')]]
+    send_async(
+        bot,
+        game.chat.id,
+        text=__("Next player: {name}", multi=game.translate).format(
+            name=display_name(game.current_player.user)
+        ),
+        reply_markup=InlineKeyboardMarkup(choice),
+    )
+
+
+def _schedule_bot_turn(game, job_queue):
+    if getattr(game, 'bot_job', None):
+        return
+
+    game.bot_job = job_queue.run_once(
+        bot_turn_job,
+        BOT_ACTION_DELAY_SECONDS,
+        data=BotTurnContext(game, job_queue),
+    )
+
+
+def continue_game(bot, game, job_queue=None, announce_next_player=True):
+    if not game_is_running(game):
+        return
+
+    _clear_game_job(game)
+
+    if is_bot_user(game.current_player.user):
+        if job_queue:
+            _schedule_bot_turn(game, job_queue)
+            return
+
+        do_bot_turn(bot, game.current_player)
+        if game_is_running(game):
+            continue_game(bot, game, job_queue)
+        return
+
+    _clear_bot_job(game)
+
+    if announce_next_player:
+        _announce_next_player(bot, game)
+
+    if job_queue:
+        start_player_countdown(bot, game, job_queue)
+
+
+def do_bot_turn(bot, player):
+    game = player.game
+    strategy = get_strategy(getattr(player.user, 'strategy_name', 'random'))
+    decision = strategy.decide(player)
+
+    if decision.action == 'choose_color':
+        game.choose_color(decision.color)
+        return
+
+    if decision.action == 'play':
+        do_play_card(bot, player, str(decision.card))
+        return
+
+    if decision.action == 'draw':
+        do_draw(bot, player)
+        return
+
+    if decision.action == 'pass':
+        game.turn()
+        return
+
+    raise ValueError(f"Unsupported bot action: {decision.action}")
+
+
+async def _announce_next_player_async(bot, game):
+    choice = [[InlineKeyboardButton(text=__("Make your choice!", multi=game.translate), switch_inline_query_current_chat='')]]
+    await bot.send_message(
+        game.chat.id,
+        text=__("Next player: {name}", multi=game.translate).format(
+            name=display_name(game.current_player.user)
+        ),
+        reply_markup=InlineKeyboardMarkup(choice),
+    )
+
+
+async def _perform_bot_turn(bot, game, job_queue):
+    if not game_is_running(game) or not is_bot_user(game.current_player.user):
+        return
+
+    player = game.current_player
+    chat = game.chat
+    strategy = get_strategy(getattr(player.user, 'strategy_name', 'random'))
+    decision = strategy.decide(player)
+    name = display_name(player.user)
+
+    if decision.action == 'play':
+        await bot.send_message(
+            chat.id,
+            text=__("{name} plays:", multi=game.translate).format(name=name),
+        )
+        if game.mode == 'text':
+            await bot.send_message(chat.id, text=repr(decision.card))
+        else:
+            await bot.send_sticker(chat.id, sticker=c.STICKERS[str(decision.card)])
+        do_play_card(bot, player, str(decision.card))
+    elif decision.action == 'draw':
+        draw_count = game.draw_counter or 1
+        await bot.send_message(
+            chat.id,
+            text=__("{name} draws {number} card.",
+                    "{name} draws {number} cards.",
+                    draw_count,
+                    multi=game.translate).format(name=name, number=draw_count),
+        )
+        do_draw(bot, player)
+    elif decision.action == 'pass':
+        await bot.send_message(
+            chat.id,
+            text=__("{name} passes.", multi=game.translate).format(name=name),
+        )
+        game.turn()
+    elif decision.action == 'choose_color':
+        await bot.send_message(
+            chat.id,
+            text=__("{name} chooses {color}.", multi=game.translate).format(
+                name=name,
+                color=display_color_group(decision.color, game),
+            ),
+        )
+        game.choose_color(decision.color)
+    else:
+        raise ValueError(f"Unsupported bot action: {decision.action}")
+
+    if not game_is_running(game):
+        return
+
+    if is_bot_user(game.current_player.user):
+        _schedule_bot_turn(game, job_queue)
+        return
+
+    await _announce_next_player_async(bot, game)
+    if job_queue:
+        start_player_countdown(bot, game, job_queue)
 
 
 # TODO do_skip() could get executed in another thread (it can be a job), so it looks like it can't use game.translate?
@@ -43,32 +220,43 @@ def do_skip(bot, player, job_queue=None):
             pass
 
         n = skipped_player.waiting_time
-        send_async(bot, chat.id,
-                   text=__("Waiting time to skip this player has "
-                        "been reduced to {time} seconds.\n"
-                        "Next player: {name}", multi=game.translate)
-                   .format(time=n,
-                           name=display_name(next_player.user))
-        )
+        if getattr(next_player.user, 'is_bot', False):
+            send_async(bot, chat.id,
+                       text=__("Waiting time to skip this player has "
+                            "been reduced to {time} seconds.", multi=game.translate)
+                       .format(time=n)
+            )
+        else:
+            send_async(bot, chat.id,
+                       text=__("Waiting time to skip this player has "
+                            "been reduced to {time} seconds.\n"
+                            "Next player: {name}", multi=game.translate)
+                       .format(time=n,
+                               name=display_name(next_player.user))
+            )
         logger.info("{player} was skipped! "
                     .format(player=display_name(player.user)))
         game.turn()
-        if job_queue:
-            start_player_countdown(bot, game, job_queue)
+        continue_game(bot, game, job_queue, announce_next_player=False)
 
     else:
         try:
             gm.leave_game(skipped_player.user, chat)
-            send_async(bot, chat.id,
-                       text=__("{name1} ran out of time "
-                            "and has been removed from the game!\n"
-                            "Next player: {name2}", multi=game.translate)
-                       .format(name1=display_name(skipped_player.user),
-                               name2=display_name(next_player.user)))
+            if getattr(next_player.user, 'is_bot', False):
+                send_async(bot, chat.id,
+                           text=__("{name1} ran out of time "
+                                "and has been removed from the game!", multi=game.translate)
+                           .format(name1=display_name(skipped_player.user)))
+            else:
+                send_async(bot, chat.id,
+                           text=__("{name1} ran out of time "
+                                "and has been removed from the game!\n"
+                                "Next player: {name2}", multi=game.translate)
+                           .format(name1=display_name(skipped_player.user),
+                                   name2=display_name(next_player.user)))
             logger.info("{player} was skipped! "
                     .format(player=display_name(player.user)))
-            if job_queue:
-                start_player_countdown(bot, game, job_queue)
+            continue_game(bot, game, job_queue, announce_next_player=False)
 
         except NotEnoughPlayersError:
             send_async(bot, chat.id,
@@ -90,14 +278,16 @@ def do_play_card(bot, player, result_id):
     chat = game.chat
     user = player.user
 
-    us = UserSetting.get(id=user.id)
-    if not us:
-        us = UserSetting(id=user.id)
+    us = None
+    if not is_bot_user(user):
+        us = UserSetting.get(id=user.id)
+        if not us:
+            us = UserSetting(id=user.id)
 
-    if us.stats:
+    if us and us.stats:
         us.cards_played += 1
 
-    if game.choosing_color:
+    if game.choosing_color and not is_bot_user(user):
         send_async(bot, chat.id, text=__("Please choose a color", multi=game.translate))
 
     if len(player.cards) == 1:
@@ -108,25 +298,14 @@ def do_play_card(bot, player, result_id):
                    text=__("{name} won!", multi=game.translate)
                    .format(name=user.first_name))
 
-        if us.stats:
+        if us and us.stats:
             us.games_played += 1
 
             if game.players_won == 0:
                 us.first_places += 1
 
-        game.players_won += 1
-
-        try:
-            gm.leave_game(user, chat)
-        except NotEnoughPlayersError:
-            send_async(bot, chat.id,
-                       text=__("Game ended!", multi=game.translate))
-
-            us2 = UserSetting.get(id=game.current_player.user.id)
-            if us2 and us2.stats:
-                us2.games_played += 1
-
-            gm.end_game(chat, user)
+        send_async(bot, chat.id, text=__("Game ended!", multi=game.translate))
+        gm.end_game(chat, user)
 
 
 def do_draw(bot, player):
@@ -208,9 +387,21 @@ def start_player_countdown(bot, game, job_queue):
         player.game.job = job
 
 
+async def bot_turn_job(context: CallbackContext):
+    bot_turn = context.job.data
+    if not isinstance(bot_turn, BotTurnContext):
+        return
+
+    game = bot_turn.game
+    game.bot_job = None
+
+    if game_is_running(game):
+        await _perform_bot_turn(context.bot, game, bot_turn.job_queue)
+
+
 def skip_job(context: CallbackContext):
     countdown = context.job.data
-    if countdown is None:
+    if not isinstance(countdown, Countdown):
         return
 
     player = countdown.player

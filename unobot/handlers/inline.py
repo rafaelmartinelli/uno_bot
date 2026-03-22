@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultsButton, Update
+from telegram import InlineQueryResultsButton, Update
 from telegram.ext import CallbackContext
 
 from unobot.core import card as c
-from unobot.services.actions import do_call_bluff, do_draw, do_play_card, start_player_countdown
+from unobot.services.actions import continue_game, do_call_bluff, do_draw, do_play_card
 from unobot.infra.config import WAITING_TIME
 from unobot.i18n.internationalization import _, __, game_locales, user_locale
 from unobot.ui.results import (
@@ -150,17 +150,7 @@ async def process_result(update: Update, context: CallbackContext):
         do_play_card(context.bot, player, result_id)
 
     if game_is_running(game):
-        nextplayer_message = __("Next player: {name}", multi=game.translate).format(
-            name=display_name(game.current_player.user)
-        )
-        choice = [[InlineKeyboardButton(text=_("Make your choice!"), switch_inline_query_current_chat='')]]
-        send_async(
-            context.bot,
-            chat.id,
-            text=nextplayer_message,
-            reply_markup=InlineKeyboardMarkup(choice),
-        )
-        start_player_countdown(context.bot, game, context.job_queue)
+        continue_game(context.bot, game, context.job_queue)
 
 
 def reset_waiting_time(bot, player):

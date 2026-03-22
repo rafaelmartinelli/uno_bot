@@ -20,10 +20,11 @@
 
 import logging
 
+from unobot.bots import BotIdentity
 from unobot.core.game import Game
 from unobot.core.player import Player
 from unobot.common.errors import (AlreadyJoinedError, LobbyClosedError, NoGameInChatError,
-                    NotEnoughPlayersError)
+                    NotEnoughPlayersError, DeckEmptyError)
 from unobot.services.promotions import send_promotion_async
 
 class GameManager(object):
@@ -34,6 +35,7 @@ class GameManager(object):
         self.userid_players = dict()
         self.userid_current = dict()
         self.remind_dict = dict()
+        self._next_bot_id = -1
 
         self.logger = logging.getLogger(__name__)
 
@@ -92,12 +94,33 @@ class GameManager(object):
 
             players = self.userid_players[user.id]
 
-        player = Player(game, user)
-        if game.started:
-            player.draw_first_hand()
+        player = self._create_player(game, user)
 
         players.append(player)
         self.userid_current[user.id] = player
+        return player
+
+    def add_bot(self, chat, strategy_name='random'):
+        """Create a synthetic bot player and add it to the current game."""
+        bot_user = BotIdentity(
+            id=self._next_bot_id,
+            first_name=f"Bot {abs(self._next_bot_id)}",
+            strategy_name=strategy_name,
+        )
+        self._next_bot_id -= 1
+
+        try:
+            game = self.chatid_games[chat.id][-1]
+        except (KeyError, IndexError):
+            raise NoGameInChatError()
+
+        if bot_user.id not in self.userid_players:
+            self.userid_players[bot_user.id] = list()
+
+        player = self._create_player(game, bot_user)
+        self.userid_players[bot_user.id].append(player)
+        self.userid_current[bot_user.id] = player
+        return player
 
     def leave_game(self, user, chat):
         """ Remove a player from its current game """
@@ -189,3 +212,17 @@ class GameManager(object):
             if player.game.chat.id == chat.id:
                 return player
         return None
+
+    def _create_player(self, game, user):
+        player = Player(game, user)
+        if not game.started:
+            return player
+
+        try:
+            player.draw_first_hand()
+        except DeckEmptyError:
+            player.leave()
+            raise
+
+        return player
+
