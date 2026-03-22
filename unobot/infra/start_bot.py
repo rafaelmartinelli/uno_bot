@@ -1,3 +1,5 @@
+from telegram import Update
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
@@ -21,5 +23,5 @@
 # a Webhook
 
 
-def start_bot(updater):
-    updater.start_polling()
+def start_bot(application):
+    application.run_polling(allowed_updates=Update.ALL_TYPES)

@@ -2,6 +2,7 @@
 Promote other UNO bots
 """
 import random
+import sys
 
 
 # Promotion messages and their weights
@@ -18,17 +19,21 @@ def get_promotion():
     """ Get a random promotion message """
     return random.choices(list(PROMOTIONS.keys()), weights=list(PROMOTIONS.values()))[0]
 
-def send_promotion(chat, chance=1.0):
+def send_promotion(bot, chat_id, chance=1.0):
     """ (Maybe) send a promotion message """
     if random.random() <= chance:
-        chat.send_message(get_promotion(), parse_mode='HTML')
+        from unobot.common.utils import send_async
+        send_async(bot, chat_id, text=get_promotion(), parse_mode='HTML')
 
 
 def send_promotion_async(chat, chance=1.0):
     """ Send a promotion message asynchronously """
+    shared_vars = sys.modules.get('shared_vars')
+    if shared_vars is None:
+        return
 
-    from utils import dispatcher, error
-    try:
-        dispatcher.run_async(send_promotion, chat, chance=chance)
-    except Exception as e:
-        error(None, None, e)
+    application = getattr(shared_vars, 'application', None)
+    if application is None:
+        return
+
+    send_promotion(application.bot, chat.id, chance=chance)

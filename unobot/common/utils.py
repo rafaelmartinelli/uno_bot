@@ -18,13 +18,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+import asyncio
+import json
 import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 from telegram import Update
+from telegram.error import BadRequest, Forbidden, TelegramError
 from telegram.ext import CallbackContext
 
-from internationalization import _, __
-from mwt import MWT
-from shared_vars import gm, dispatcher
+from unobot.infra.config import TOKEN
+from unobot.i18n.internationalization import _, __
+from unobot.common.mwt import MWT
+from unobot.infra.shared_vars import gm
 
 logger = logging.getLogger(__name__)
 
@@ -77,31 +84,54 @@ def display_color_group(color, game):
             emoji='💛')
 
 
-def error(update: Update, context: CallbackContext):
-    """Simple error handler"""
-    logger.exception(context.error)
+def log_error(err: Exception):
+    """Log an exception if present."""
+    if err is not None:
+        logger.exception(err)
+
+
+async def error(update: Update = None, context: CallbackContext = None):
+    """Application error handler compatible with PTB 22."""
+    log_error(context.error if context is not None else None)
+
+
+def run_async(coro):
+    """Schedule a coroutine from sync handler code."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.run(coro)
+        return
+
+    loop.create_task(coro)
+
+
+async def _safe_telegram_call(coro):
+    try:
+        return await coro
+    except (Forbidden, BadRequest) as exc:
+        logger.warning("Telegram request was rejected: %s", exc)
+    except TelegramError as exc:
+        logger.error("Telegram error: %s", exc)
 
 
 def send_async(bot, *args, **kwargs):
     """Send a message asynchronously"""
-    if 'timeout' not in kwargs:
-        kwargs['timeout'] = TIMEOUT
+    kwargs.pop('timeout', None)
 
     try:
-        dispatcher.run_async(bot.sendMessage, *args, **kwargs)
+        run_async(_safe_telegram_call(bot.send_message(*args, **kwargs)))
     except Exception as e:
-        error(None, None, e)
-
+        log_error(e)
 
 def answer_async(bot, *args, **kwargs):
     """Answer an inline query asynchronously"""
-    if 'timeout' not in kwargs:
-        kwargs['timeout'] = TIMEOUT
+    kwargs.pop('timeout', None)
 
     try:
-        dispatcher.run_async(bot.answerInlineQuery, *args, **kwargs)
+        run_async(_safe_telegram_call(bot.answer_inline_query(*args, **kwargs)))
     except Exception as e:
-        error(None, None, e)
+        log_error(e)
 
 
 def game_is_running(game):
@@ -123,4 +153,19 @@ def user_is_creator_or_admin(user, game, bot, chat):
 @MWT(timeout=60*60)
 def get_admin_ids(bot, chat_id):
     """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
-    return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
+    url = (
+        f"https://api.telegram.org/bot{TOKEN}/getChatAdministrators?"
+        + urllib.parse.urlencode({'chat_id': chat_id})
+    )
+
+    try:
+        with urllib.request.urlopen(url, timeout=TIMEOUT) as response:
+            payload = json.loads(response.read().decode('utf-8'))
+    except (urllib.error.URLError, json.JSONDecodeError):
+        logger.warning("Could not refresh admin list for chat_id=%s", chat_id)
+        return []
+
+    if not payload.get('ok'):
+        return []
+
+    return [admin['user']['id'] for admin in payload.get('result', [])]

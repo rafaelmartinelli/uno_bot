@@ -1,20 +1,17 @@
-import random
-
 import logging
 
-import card as c
-from datetime import datetime
+from unobot.core import card as c
+from pony.orm import db_session
 
-from telegram import Message, Chat
 from telegram.ext import CallbackContext
 from apscheduler.jobstores.base import JobLookupError
 
-from config import TIME_REMOVAL_AFTER_SKIP, MIN_FAST_TURN_TIME
-from errors import DeckEmptyError, NotEnoughPlayersError
-from internationalization import __, _
-from shared_vars import gm
-from user_setting import UserSetting
-from utils import send_async, display_name, game_is_running
+from unobot.infra.config import TIME_REMOVAL_AFTER_SKIP, MIN_FAST_TURN_TIME
+from unobot.common.errors import DeckEmptyError, NotEnoughPlayersError
+from unobot.i18n.internationalization import __
+from unobot.infra.shared_vars import gm
+from unobot.persistence.user_setting import UserSetting
+from unobot.common.utils import send_async, display_name, game_is_running
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +81,7 @@ def do_skip(bot, player, job_queue=None):
 
 
 
+@db_session
 def do_play_card(bot, player, result_id):
     """Plays the selected card and sends an update to the group if needed"""
     card = c.from_str(result_id)
@@ -202,7 +200,7 @@ def start_player_countdown(bot, game, job_queue):
             #lambda x,y: do_skip(bot, player),
             skip_job,
             time,
-            context=Countdown(player, job_queue)
+            data=Countdown(player, job_queue)
         )
 
         logger.info("Started countdown for player: {player}. {time} seconds."
@@ -211,8 +209,12 @@ def start_player_countdown(bot, game, job_queue):
 
 
 def skip_job(context: CallbackContext):
-    player = context.job.context.player
+    countdown = context.job.data
+    if countdown is None:
+        return
+
+    player = countdown.player
     game = player.game
     if game_is_running(game):
-        job_queue = context.job.context.job_queue
+        job_queue = countdown.job_queue
         do_skip(context.bot, player, job_queue)

@@ -20,9 +20,9 @@
 
 import unittest
 
-from game import Game
-from player import Player
-import card as c
+from unobot.core.game import Game
+from unobot.core.player import Player
+from unobot.core import card as c
 
 
 class Test(unittest.TestCase):

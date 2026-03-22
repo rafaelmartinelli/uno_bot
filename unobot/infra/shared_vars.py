@@ -18,17 +18,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-from config import TOKEN, WORKERS
-import logging
+from pathlib import Path
+
+from unobot.infra.config import TOKEN
 import os
-from telegram.ext import Updater
+from telegram.ext import Application
 
-from game_manager import GameManager
-from database import db
+from unobot.services.game_manager import GameManager
+from unobot.infra.database import db
 
-db.bind('sqlite', os.getenv('UNO_DB', 'uno.sqlite3'), create_db=True)
+project_root_db = Path(__file__).resolve().parents[2] / 'uno.sqlite3'
+db.bind('sqlite', os.getenv('UNO_DB', str(project_root_db)), create_db=True)
 db.generate_mapping(create_tables=True)
 
 gm = GameManager()
-updater = Updater(token=TOKEN, workers=WORKERS, use_context=True)
-dispatcher = updater.dispatcher
+application = Application.builder().token(TOKEN).build()
+
+# Backward-compatible aliases used by existing modules.
+updater = application
+dispatcher = application

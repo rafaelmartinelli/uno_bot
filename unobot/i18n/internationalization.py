@@ -19,12 +19,13 @@
 
 
 import gettext
+import inspect
 from functools import wraps
 
 from locales import available_locales
 from pony.orm import db_session
-from user_setting import UserSetting
-from shared_vars import gm
+from unobot.persistence.user_setting import UserSetting
+from unobot.infra.shared_vars import gm
 
 GETTEXT_DOMAIN = 'unobot'
 GETTEXT_DIR = 'locales'
@@ -63,7 +64,7 @@ class _Underscore(object):
 
     def __call__(self, singular, plural=None, n=1, locale=None):
         if not locale:
-            locale = self.locale_stack[-1]
+            locale = self.locale_stack[-1] if self.locale_stack else 'en_US'
 
         if locale not in self.translators.keys():
             if n == 1:
@@ -100,19 +101,21 @@ def __(singular, plural=None, n=1, multi=False):
 
 def user_locale(func):
     @wraps(func)
-    @db_session
-    def wrapped(update, context, *pargs, **kwargs):
-        user = _user_chat_from_update(update)[0]
-
+    async def wrapped(update, context, *pargs, **kwargs):
         with db_session:
+            user = _user_chat_from_update(update)[0]
             us = UserSetting.get(id=user.id)
 
-        if us and us.lang != 'en':
-            _.push(us.lang)
-        else:
-            _.push('en_US')
+            if us and us.lang != 'en':
+                _.push(us.lang)
+            else:
+                _.push('en_US')
 
-        result = func(update, context, *pargs, **kwargs)
+            result = func(update, context, *pargs, **kwargs)
+
+        if inspect.isawaitable(result):
+            result = await result
+
         _.pop()
         return result
     return wrapped
@@ -120,28 +123,31 @@ def user_locale(func):
 
 def game_locales(func):
     @wraps(func)
-    @db_session
-    def wrapped(update, context, *pargs, **kwargs):
-        user, chat = _user_chat_from_update(update)
-        player = gm.player_for_user_in_chat(user, chat)
-        locales = list()
+    async def wrapped(update, context, *pargs, **kwargs):
+        with db_session:
+            user, chat = _user_chat_from_update(update)
+            player = gm.player_for_user_in_chat(user, chat)
+            locales = list()
 
-        if player:
-            for player in player.game.players:
-                us = UserSetting.get(id=player.user.id)
+            if player:
+                for player in player.game.players:
+                    us = UserSetting.get(id=player.user.id)
 
-                if us and us.lang != 'en':
-                    loc = us.lang
-                else:
-                    loc = 'en_US'
+                    if us and us.lang != 'en':
+                        loc = us.lang
+                    else:
+                        loc = 'en_US'
 
-                if loc in locales:
-                    continue
+                    if loc in locales:
+                        continue
 
-                _.push(loc)
-                locales.append(loc)
+                    _.push(loc)
+                    locales.append(loc)
 
-        result = func(update, context, *pargs, **kwargs)
+            result = func(update, context, *pargs, **kwargs)
+
+        if inspect.isawaitable(result):
+            result = await result
 
         while _.code:
             _.pop()

@@ -19,7 +19,7 @@
 
 
 from pony.orm import Optional, PrimaryKey
-from database import db
+from unobot.infra.database import db
 
 
 class UserSetting(db.Entity):

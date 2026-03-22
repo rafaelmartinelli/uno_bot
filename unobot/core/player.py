@@ -21,9 +21,9 @@
 import logging
 from datetime import datetime
 
-import card as c
-from errors import DeckEmptyError
-from config import WAITING_TIME
+from unobot.core import card as c
+from unobot.common.errors import DeckEmptyError
+from unobot.infra.config import WAITING_TIME
 
 
 class Player(object):

@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from telegram import ParseMode, Update
+from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import CommandHandler, CallbackContext
 
-from user_setting import UserSetting
-from utils import send_async
-from shared_vars import dispatcher
-from internationalization import _, user_locale
-from promotions import send_promotion
+from unobot.persistence.user_setting import UserSetting
+from unobot.common.utils import send_async
+from unobot.infra.shared_vars import dispatcher
+from unobot.i18n.internationalization import _, user_locale
+from unobot.services.promotions import send_promotion
 
 @user_locale
 def help_handler(update: Update, context: CallbackContext):
@@ -65,15 +66,11 @@ def help_handler(update: Update, context: CallbackContext):
       "<a href=\"https://telegram.me/unobotnews\">update channel</a>"
       " and buy an UNO card game.")
 
-    def _send():
-      update.message.chat.send_message(
-          help_text,
-          parse_mode=ParseMode.HTML,
-          disable_web_page_preview=True,
-      )
-      send_promotion(update.effective_chat)
-
-    context.dispatcher.run_async(_send)
+    send_async(context.bot, update.effective_chat.id,
+               text=help_text,
+               parse_mode=ParseMode.HTML,
+               disable_web_page_preview=True)
+    send_promotion(context.bot, update.effective_chat.id)
 
 @user_locale
 def modes(update: Update, context: CallbackContext):

@@ -22,8 +22,8 @@ import unittest
 
 from telegram import User, Chat
 
-from game_manager import GameManager
-from errors import AlreadyJoinedError, LobbyClosedError, NoGameInChatError, \
+from unobot.services.game_manager import GameManager
+from unobot.common.errors import AlreadyJoinedError, LobbyClosedError, NoGameInChatError, \
     NotEnoughPlayersError
 
 
@@ -38,9 +38,9 @@ class Test(unittest.TestCase):
         self.chat1 = Chat(1, 'group')
         self.chat2 = Chat(2, 'group')
 
-        self.user0 = User(0, 'user0')
-        self.user1 = User(1, 'user1')
-        self.user2 = User(2, 'user2')
+        self.user0 = User(0, 'user0', False)
+        self.user1 = User(1, 'user1', False)
+        self.user2 = User(2, 'user2', False)
 
     def test_new_game(self):
         g0 = self.gm.new_game(self.chat0)

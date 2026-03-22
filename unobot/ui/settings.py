@@ -19,13 +19,13 @@
 
 
 from telegram import ReplyKeyboardMarkup, Update
-from telegram.ext import CommandHandler, Filters, MessageHandler, CallbackContext
+from telegram.ext import CommandHandler, MessageHandler, CallbackContext, filters
 
-from utils import send_async
-from user_setting import UserSetting
-from shared_vars import dispatcher
+from unobot.common.utils import send_async
+from unobot.persistence.user_setting import UserSetting
+from unobot.infra.shared_vars import dispatcher
 from locales import available_locales
-from internationalization import _, user_locale
+from unobot.i18n.internationalization import _, user_locale
 
 
 @user_locale
@@ -58,7 +58,11 @@ def show_settings(update: Update, context: CallbackContext):
 def kb_select(update: Update, context: CallbackContext):
     chat = update.message.chat
     user = update.message.from_user
-    option = context.match[1]
+    match = context.matches[0] if context.matches else None
+    if not match:
+        return
+
+    option = match[1]
 
     if option == '📊':
         us = UserSetting.get(id=user.id)
@@ -86,7 +90,11 @@ def kb_select(update: Update, context: CallbackContext):
 def locale_select(update: Update, context: CallbackContext):
     chat = update.message.chat
     user = update.message.from_user
-    option = context.match[1]
+    match = context.matches[0] if context.matches else None
+    if not match:
+        return
+
+    option = match[1]
 
     if option in available_locales:
         us = UserSetting.get(id=user.id)
@@ -97,9 +105,9 @@ def locale_select(update: Update, context: CallbackContext):
 
 def register():
     dispatcher.add_handler(CommandHandler('settings', show_settings))
-    dispatcher.add_handler(MessageHandler(Filters.regex('^([' + '📊' +
+    dispatcher.add_handler(MessageHandler(filters.Regex('^([' + '📊' +
                                                         '🌍' +
                                                         '❌' + ']) .+$'),
                                         kb_select))
-    dispatcher.add_handler(MessageHandler(Filters.regex(r'^(\w\w_\w\w) - .*'),
+    dispatcher.add_handler(MessageHandler(filters.Regex(r'^(\w\w_\w\w) - .*'),
                                         locale_select))

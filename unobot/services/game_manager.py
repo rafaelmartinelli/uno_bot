@@ -20,11 +20,11 @@
 
 import logging
 
-from game import Game
-from player import Player
-from errors import (AlreadyJoinedError, LobbyClosedError, NoGameInChatError,
+from unobot.core.game import Game
+from unobot.core.player import Player
+from unobot.common.errors import (AlreadyJoinedError, LobbyClosedError, NoGameInChatError,
                     NotEnoughPlayersError)
-from promotions import send_promotion_async
+from unobot.services.promotions import send_promotion_async
 
 class GameManager(object):
     """ Manages all running games by using a confusing amount of dicts """
