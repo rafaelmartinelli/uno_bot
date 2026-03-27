@@ -67,7 +67,7 @@ class _Underscore(object):
             locale = self.locale_stack[-1] if self.locale_stack else 'en_US'
 
         if locale not in self.translators.keys():
-            if n == 1:
+            if n == 1 or plural is None:
                 return singular
             else:
                 return plural
@@ -85,6 +85,10 @@ _ = _Underscore()
 def __(singular, plural=None, n=1, multi=False):
     """Translates text into all locales on the stack"""
     translations = list()
+
+    # Async jobs can run without locale decorators; always keep a safe fallback.
+    if not _.locale_stack:
+        return _(singular, plural, n, 'en_US')
 
     if not multi and len(set(_.locale_stack)) >= 1:
         translations.append(_(singular, plural, n, 'en_US'))

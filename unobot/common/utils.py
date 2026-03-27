@@ -25,7 +25,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from telegram import Update
-from telegram.error import BadRequest, Forbidden, TelegramError
+from telegram.error import BadRequest, Forbidden, RetryAfter, TelegramError
 from telegram.ext import CallbackContext
 
 from unobot.infra.config import TOKEN
@@ -66,6 +66,7 @@ def display_color(color):
         return _("{emoji} Green").format(emoji='💚')
     if color == "y":
         return _("{emoji} Yellow").format(emoji='💛')
+    return None
 
 
 def display_color_group(color, game):
@@ -82,12 +83,20 @@ def display_color_group(color, game):
     if color == "y":
         return __("{emoji} Yellow", game.translate).format(
             emoji='💛')
+    return None
 
 
 def log_error(err: Exception):
     """Log an exception if present."""
     if err is not None:
-        logger.exception(err)
+        if err.__traceback__ is not None:
+            logger.error(
+                "%s",
+                err,
+                exc_info=(type(err), err, err.__traceback__),
+            )
+        else:
+            logger.error("%s", err)
 
 
 async def error(update: Update = None, context: CallbackContext = None):
@@ -106,13 +115,44 @@ def run_async(coro):
     loop.create_task(coro)
 
 
-async def _safe_telegram_call(coro):
-    try:
-        return await coro
-    except (Forbidden, BadRequest) as exc:
-        logger.warning("Telegram request was rejected: %s", exc)
-    except TelegramError as exc:
-        logger.error("Telegram error: %s", exc)
+async def _safe_telegram_call(coro_factory, max_retry_after_retries=1):
+    attempts = 0
+
+    while True:
+        try:
+            return await coro_factory()
+        except RetryAfter as exc:
+            retry_after = max(1, int(getattr(exc, 'retry_after', 1)))
+            if attempts >= max_retry_after_retries:
+                logger.error("Flood control exceeded. Retry in %s seconds", retry_after)
+                return None
+
+            attempts += 1
+            logger.warning(
+                "Flood control exceeded. Retrying in %s seconds (%s/%s)",
+                retry_after,
+                attempts,
+                max_retry_after_retries,
+            )
+            await asyncio.sleep(retry_after)
+        except (Forbidden, BadRequest) as exc:
+            logger.warning("Telegram request was rejected: %s", exc)
+            return None
+        except TelegramError as exc:
+            logger.error("Telegram error: %s", exc)
+            return None
+
+
+async def send_message_with_retry(bot, *args, **kwargs):
+    """Send a message and retry once when Telegram asks for flood-control backoff."""
+    kwargs.pop('timeout', None)
+    return await _safe_telegram_call(lambda: bot.send_message(*args, **kwargs))
+
+
+async def send_sticker_with_retry(bot, *args, **kwargs):
+    """Send a sticker and retry once when Telegram asks for flood-control backoff."""
+    kwargs.pop('timeout', None)
+    return await _safe_telegram_call(lambda: bot.send_sticker(*args, **kwargs))
 
 
 def send_async(bot, *args, **kwargs):
@@ -120,7 +160,7 @@ def send_async(bot, *args, **kwargs):
     kwargs.pop('timeout', None)
 
     try:
-        run_async(_safe_telegram_call(bot.send_message(*args, **kwargs)))
+        run_async(_safe_telegram_call(lambda: bot.send_message(*args, **kwargs)))
     except Exception as e:
         log_error(e)
 
@@ -129,7 +169,7 @@ def answer_async(bot, *args, **kwargs):
     kwargs.pop('timeout', None)
 
     try:
-        run_async(_safe_telegram_call(bot.answer_inline_query(*args, **kwargs)))
+        run_async(_safe_telegram_call(lambda: bot.answer_inline_query(*args, **kwargs)))
     except Exception as e:
         log_error(e)
 

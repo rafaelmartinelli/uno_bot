@@ -17,7 +17,14 @@ from unobot.common.errors import DeckEmptyError, NotEnoughPlayersError
 from unobot.i18n.internationalization import __
 from unobot.infra.shared_vars import gm
 from unobot.persistence.user_setting import UserSetting
-from unobot.common.utils import send_async, display_name, display_color_group, game_is_running
+from unobot.common.utils import (
+    send_async,
+    display_name,
+    display_color_group,
+    game_is_running,
+    send_message_with_retry,
+    send_sticker_with_retry,
+)
 
 logger = logging.getLogger(__name__)
 BOT_ACTION_DELAY_SECONDS = max(0.0, BOT_ACTION_DELAY)
@@ -132,7 +139,8 @@ def do_bot_turn(bot, player):
 
 async def _announce_next_player_async(bot, game):
     choice = [[InlineKeyboardButton(text=__("Make your choice!", multi=game.translate), switch_inline_query_current_chat='')]]
-    await bot.send_message(
+    await send_message_with_retry(
+        bot,
         game.chat.id,
         text=__("Next player: {name}", multi=game.translate).format(
             name=display_name(game.current_player.user)
@@ -152,18 +160,20 @@ async def _perform_bot_turn(bot, game, job_queue):
     name = display_name(player.user)
 
     if decision.action == 'play':
-        await bot.send_message(
+        await send_message_with_retry(
+            bot,
             chat.id,
             text=__("{name} plays:", multi=game.translate).format(name=name),
         )
         if game.mode == 'text':
-            await bot.send_message(chat.id, text=repr(decision.card))
+            await send_message_with_retry(bot, chat.id, text=repr(decision.card))
         else:
-            await bot.send_sticker(chat.id, sticker=c.STICKERS[str(decision.card)])
+            await send_sticker_with_retry(bot, chat.id, sticker=c.STICKERS[str(decision.card)])
         do_play_card(bot, player, str(decision.card))
     elif decision.action == 'draw':
         draw_count = game.draw_counter or 1
-        await bot.send_message(
+        await send_message_with_retry(
+            bot,
             chat.id,
             text=__("{name} draws {number} card.",
                     "{name} draws {number} cards.",
@@ -172,13 +182,15 @@ async def _perform_bot_turn(bot, game, job_queue):
         )
         do_draw(bot, player)
     elif decision.action == 'pass':
-        await bot.send_message(
+        await send_message_with_retry(
+            bot,
             chat.id,
             text=__("{name} passes.", multi=game.translate).format(name=name),
         )
         game.turn()
     elif decision.action == 'choose_color':
-        await bot.send_message(
+        await send_message_with_retry(
+            bot,
             chat.id,
             text=__("{name} chooses {color}.", multi=game.translate).format(
                 name=name,
