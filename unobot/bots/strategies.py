@@ -106,7 +106,7 @@ _STRATEGIES = {
 }
 
 
-def get_strategy(name: str = 'random'):
+def get_strategy(name: str = 'greedy'):
     try:
         return _STRATEGIES[name]
     except KeyError as exc:

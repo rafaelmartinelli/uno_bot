@@ -98,12 +98,12 @@ class GameManager(object):
         self.userid_current[user.id] = player
         return player
 
-    def add_bot(self, chat, strategy_name='random'):
+    def add_bot(self, chat, name = ''):
         """Create a synthetic bot player and add it to the current game."""
         bot_user = BotIdentity(
             id=self._next_bot_id,
-            first_name=f"Bot {abs(self._next_bot_id)}",
-            strategy_name=strategy_name,
+            first_name=f'Bot {abs(self._next_bot_id)}' if name == '' else name,
+            strategy_name='greedy',
         )
         self._next_bot_id -= 1
 

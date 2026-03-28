@@ -44,47 +44,31 @@ def add_bot(update: Update, context: CallbackContext):
         )
         return
 
-    count = 1
+    name = ""
     if context.args:
-        try:
-            count = int(context.args[0])
-            if count < 1:
-                raise ValueError
-        except ValueError:
-            send_async(
-                context.bot,
-                chat.id,
-                text=_("Usage: /add_bot [number of bots]"),
-                reply_to_message_id=update.message.message_id,
-            )
-            return
+        for arg in context.args:
+            name += (arg + ' ')
 
-    added_players = []
+    player = None
     deck_exhausted = False
-    for bot_index in range(count):
-        try:
-            added_players.append(gm.add_bot(chat))
-        except DeckEmptyError:
-            deck_exhausted = True
-            break
 
-    if not added_players:
+    try:
+        player = gm.add_bot(chat, name)
+    except DeckEmptyError:
+        deck_exhausted = True
+
+    if not player:
         send_async(
             context.bot,
             chat.id,
-            text=_("There are not enough cards left in the deck for new players to join."),
+            text=_('There are not enough cards left in the deck for new player to join.'),
             reply_to_message_id=update.message.message_id,
         )
         return
 
-    if len(added_players) == 1:
-        message = _("Added bot player {name}.").format(name=display_name(added_players[0].user))
-    else:
-        names = ', '.join(display_name(player.user) for player in added_players)
-        message = _("Added {count} bot players: {names}").format(count=len(added_players), names=names)
-
+    message = _('Added bot player {name} with {strategy} strategy.').format(name=display_name(player.user), strategy=player.user.strategy_name)
     if deck_exhausted:
-        message += '\n' + _("Stopped early because there are not enough cards left in the deck.")
+        message += '\n' + _('Stopped early because there are not enough cards left in the deck.')
 
     send_async(
         context.bot,

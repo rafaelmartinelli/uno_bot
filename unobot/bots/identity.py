@@ -6,7 +6,7 @@ class BotIdentity:
     id: int
     first_name: str
     username: str | None = None
-    strategy_name: str = 'random'
+    strategy_name: str = 'greedy'
     is_bot: bool = True
 
 
