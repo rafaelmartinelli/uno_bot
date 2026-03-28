@@ -44,10 +44,11 @@ def add_bot(update: Update, context: CallbackContext):
         )
         return
 
-    name = ""
+    name = ''
     if context.args:
         for arg in context.args:
             name += (arg + ' ')
+        name = name.strip()
 
     player = None
     deck_exhausted = False
