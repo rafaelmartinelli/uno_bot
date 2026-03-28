@@ -50,8 +50,7 @@ DRAW_TWO = 'draw'
 REVERSE = 'reverse'
 SKIP = 'skip'
 
-VALUES = (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, DRAW_TWO,
-          REVERSE, SKIP)
+VALUES = (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, DRAW_TWO, REVERSE, SKIP)
 WILD_VALUES = (ONE, TWO, THREE, FOUR, FIVE, DRAW_TWO, REVERSE, SKIP)
 
 # Special cards
@@ -327,8 +326,7 @@ class Card(object):
         if self.special:
             return '%s%s%s' % (COLOR_ICONS.get(self.color, ''),
                                COLOR_ICONS[BLACK],
-                               ' '.join([s.capitalize()
-                                         for s in self.special.split('_')]))
+                               ' '.join([s.capitalize() for s in self.special.split('_')]))
         else:
             return '%s%s' % (COLOR_ICONS[self.color], self.value.capitalize())
 

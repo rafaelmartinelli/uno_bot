@@ -65,10 +65,10 @@ class Game(object):
         return players
 
     def start(self):
-        if self.mode == None or self.mode != "wild":
-            self.deck._fill_classic_()
+        if self.mode is None or self.mode != "wild":
+            self.deck.fill_classic()
         else:
-            self.deck._fill_wild_()
+            self.deck.fill_wild()
 
         self._first_card_()
         self.started = True

@@ -12,4 +12,3 @@ class BotIdentity:
 
 def is_bot_user(user) -> bool:
     return isinstance(user, BotIdentity)
-

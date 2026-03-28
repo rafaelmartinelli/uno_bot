@@ -14,7 +14,7 @@ from unobot.common.utils import display_name, send_async, user_is_creator_or_adm
 
 @user_locale
 def add_bot(update: Update, context: CallbackContext):
-    """Handler for the /addbot command."""
+    """Handler for the /add_bot command."""
     if update.message.chat.type == 'private':
         help_handler(update, context)
         return
@@ -54,7 +54,7 @@ def add_bot(update: Update, context: CallbackContext):
             send_async(
                 context.bot,
                 chat.id,
-                text=_("Usage: /addbot [number of bots]"),
+                text=_("Usage: /add_bot [number of bots]"),
                 reply_to_message_id=update.message.message_id,
             )
             return

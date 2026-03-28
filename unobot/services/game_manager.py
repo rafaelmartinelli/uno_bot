@@ -43,20 +43,18 @@ class GameManager(object):
         """
         Create a new game in this chat
         """
-        chat_id = chat.id
-
-        self.logger.debug("Creating new game in chat " + str(chat_id))
+        self.logger.debug("Creating new game in chat " + str(chat.id))
         game = Game(chat)
 
-        if chat_id not in self.chatid_games:
-            self.chatid_games[chat_id] = list()
+        if chat.id not in self.chatid_games:
+            self.chatid_games[chat.id] = list()
 
         # remove old games
-        for g in list(self.chatid_games[chat_id]):
+        for g in list(self.chatid_games[chat.id]):
             if not g.players:
-                self.chatid_games[chat_id].remove(g)
+                self.chatid_games[chat.id].remove(g)
 
-        self.chatid_games[chat_id].append(game)
+        self.chatid_games[chat.id].append(game)
         return game
 
     def join_game(self, user, chat):
@@ -76,7 +74,7 @@ class GameManager(object):
 
         players = self.userid_players[user.id]
 
-        # Don not re-add a player and remove the player from previous games in
+        # Do not re-add a player and remove the player from previous games in
         # this chat, if he is in one of them
         for player in players:
             if player in game.players:

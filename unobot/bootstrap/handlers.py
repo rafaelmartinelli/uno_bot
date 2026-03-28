@@ -28,7 +28,7 @@ def register_handlers():
     dispatcher.add_handler(CallbackQueryHandler(select_game))
     dispatcher.add_handler(CommandHandler('start', start_game))
     dispatcher.add_handler(CommandHandler('new', new_game))
-    dispatcher.add_handler(CommandHandler(['addbot', 'add_bot'], add_bot))
+    dispatcher.add_handler(CommandHandler('add_bot', add_bot))
     dispatcher.add_handler(CommandHandler('kill', kill_game))
     dispatcher.add_handler(CommandHandler('join', join_game))
     dispatcher.add_handler(CommandHandler('leave', leave_game))

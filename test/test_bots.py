@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from telegram import Chat, User
 
-from unobot.bots import BotIdentity, RandomStrategy
+from unobot.bots import BotIdentity, GreedyStrategy, RandomStrategy, get_strategy
 from unobot.core import card as c
 from unobot.core.game import Game
 from unobot.core.player import Player
@@ -76,6 +76,106 @@ class TestRandomStrategy(unittest.TestCase):
 
         self.assertEqual(decision.action, 'choose_color')
         self.assertEqual(decision.color, c.BLUE)
+
+
+class TestGreedyStrategy(unittest.TestCase):
+
+    def test_keeps_current_color_until_exhausted(self):
+        game = Game(Chat(108, 'group'))
+        player = Player(game, BotIdentity(-1, 'Bot 1', strategy_name='greedy'))
+        game.last_card = c.Card(c.RED, '5')
+        player.cards = [
+            c.Card(c.RED, '3'),
+            c.Card(c.BLUE, '5'),
+            c.Card(c.BLUE, '7'),
+        ]
+
+        decision = GreedyStrategy().decide(player)
+
+        self.assertEqual(decision.action, 'play')
+        self.assertEqual(str(decision.card), 'r_3')
+
+    def test_rule0_keeps_color_even_with_off_color_wild(self):
+        game = Game(Chat(112, 'group'))
+        player = Player(game, BotIdentity(-1, 'Bot 1', strategy_name='greedy'))
+        next_player = Player(game, User(99, 'human', False))
+        game.last_card = c.Card(c.RED, '5')
+        player.cards = [
+            c.Card(c.RED, '1'),
+            c.Card(None, None, c.DRAW_FOUR),
+        ]
+        next_player.cards = [c.Card(c.BLUE, '9')]
+
+        decision = GreedyStrategy().decide(player)
+
+        self.assertEqual(decision.action, 'play')
+        self.assertEqual(str(decision.card), 'r_1')
+
+    def test_prefers_cross_color_duplicate_value(self):
+        game = Game(Chat(110, 'group'))
+        player = Player(game, BotIdentity(-1, 'Bot 1', strategy_name='greedy'))
+        game.last_card = c.Card(c.RED, '1')
+        player.cards = [
+            c.Card(c.RED, '6'),
+            c.Card(c.RED, '4'),
+            c.Card(c.BLUE, '6'),
+        ]
+
+        decision = GreedyStrategy().decide(player)
+
+        self.assertEqual(decision.action, 'play')
+        self.assertEqual(str(decision.card), 'r_6')
+
+    def test_prefers_disruption_when_next_player_is_low(self):
+        game = Game(Chat(111, 'group'))
+        player = Player(game, BotIdentity(-1, 'Bot 1', strategy_name='greedy'))
+        next_player = Player(game, User(99, 'human', False))
+        game.last_card = c.Card(c.RED, '5')
+        player.cards = [
+            c.Card(c.RED, '3'),
+            c.Card(c.RED, c.SKIP),
+        ]
+        next_player.cards = [c.Card(c.BLUE, '9')]
+
+        decision = GreedyStrategy().decide(player)
+
+        self.assertEqual(decision.action, 'play')
+        self.assertEqual(str(decision.card), 'r_skip')
+
+    def test_prefers_draw_four_over_colorchooser_when_no_same_color_and_next_player_low(self):
+        game = Game(Chat(113, 'group'))
+        player = Player(game, BotIdentity(-1, 'Bot 1', strategy_name='greedy'))
+        next_player = Player(game, User(99, 'human', False))
+        game.last_card = c.Card(c.RED, '5')
+        player.cards = [
+            c.Card(None, None, c.CHOOSE),
+            c.Card(None, None, c.DRAW_FOUR),
+        ]
+        next_player.cards = [c.Card(c.GREEN, '2')]
+
+        decision = GreedyStrategy().decide(player)
+
+        self.assertEqual(decision.action, 'play')
+        self.assertEqual(str(decision.card), 'draw_four')
+
+    def test_decides_color_from_majority_in_hand(self):
+        game = Game(Chat(109, 'group'))
+        player = Player(game, BotIdentity(-1, 'Bot 1', strategy_name='greedy'))
+        game.choosing_color = True
+        player.cards = [
+            c.Card(c.GREEN, '1'),
+            c.Card(c.GREEN, '5'),
+            c.Card(c.BLUE, '9'),
+            c.Card(None, None, c.CHOOSE),
+        ]
+
+        decision = GreedyStrategy().decide(player)
+
+        self.assertEqual(decision.action, 'choose_color')
+        self.assertEqual(decision.color, c.GREEN)
+
+    def test_get_strategy_greedy(self):
+        self.assertIsInstance(get_strategy('greedy'), GreedyStrategy)
 
 
 class TestBotTurns(unittest.TestCase):

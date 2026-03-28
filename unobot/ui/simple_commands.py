@@ -49,7 +49,7 @@ def help_handler(update: Update, context: CallbackContext):
       "receive a private message when a new game is started.\n\n"
       "<b>Language</b> and other settings: /settings\n"
       "Other commands (only game creator):\n"
-      "/addbot - Add one or more bot players\n"
+      "/add_bot - Add one or more bot players\n"
       "/close - Close lobby\n"
       "/open - Open lobby\n"
       "/kill - Terminate the game\n"

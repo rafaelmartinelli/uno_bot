@@ -62,8 +62,8 @@ class Deck(object):
             card.color = None
         self.graveyard.append(card)
 
-    def _fill_classic_(self):
-        # Fill deck with the classic card set
+    def fill_classic(self):
+        """Fill deck with the classic card set"""
         self.cards.clear()
         for color in c.COLORS:
             for value in c.VALUES:
@@ -75,8 +75,8 @@ class Deck(object):
                 self.cards.append(Card(None, None, special=special))
         self.shuffle()
 
-    def _fill_wild_(self):
-        # Fill deck with a wild card set
+    def fill_wild(self):
+        """Fill deck with a wild card set"""
         self.cards.clear()
         for color in c.COLORS:
             for value in c.WILD_VALUES:

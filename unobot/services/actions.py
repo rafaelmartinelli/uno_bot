@@ -115,7 +115,7 @@ def continue_game(bot, game, job_queue=None, announce_next_player=True):
 
 def do_bot_turn(bot, player):
     game = player.game
-    strategy = get_strategy(getattr(player.user, 'strategy_name', 'random'))
+    strategy = get_strategy(getattr(player.user, 'strategy_name', 'greedy'))
     decision = strategy.decide(player)
 
     if decision.action == 'choose_color':
@@ -155,7 +155,7 @@ async def _perform_bot_turn(bot, game, job_queue):
 
     player = game.current_player
     chat = game.chat
-    strategy = get_strategy(getattr(player.user, 'strategy_name', 'random'))
+    strategy = get_strategy(getattr(player.user, 'strategy_name', 'greedy'))
     decision = strategy.decide(player)
     name = display_name(player.user)
 
@@ -223,7 +223,7 @@ def do_skip(bot, player, job_queue=None):
     if skipped_player.waiting_time > 0:
         skipped_player.anti_cheat += 1
         skipped_player.waiting_time -= TIME_REMOVAL_AFTER_SKIP
-        if (skipped_player.waiting_time < 0):
+        if skipped_player.waiting_time < 0:
             skipped_player.waiting_time = 0
 
         try:

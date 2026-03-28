@@ -25,7 +25,7 @@ To run the bot yourself, you will need:
 You can change some gameplay parameters like turn times, minimum amount of players and default gamemode in `config.json`.
 Current gamemodes available: classic, fast and wild. Check the details with the `/modes` command.
 
-You can also add synthetic players with `/addbot` (optionally `/addbot 3` to add several). The first built-in bot uses a random strategy: it plays a random valid card, chooses a valid color at random, or draws/passes when needed.
+You can also add synthetic players with `/add_bot` (optionally `/add_bot 3` to add several). The first built-in bot uses a random strategy: it plays a random valid card, chooses a valid color at random, or draws/passes when needed.
 
 Then run the bot with `python -m unobot`.
 
