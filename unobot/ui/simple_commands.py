@@ -76,13 +76,13 @@ def help_handler(update: Update, context: CallbackContext):
 @user_locale
 def modes(update: Update, context: CallbackContext):
     """Handler for the /help command"""
-    modes_explanation = _("This UNO bot has four game modes: Classic, Sanic, Wild and Text.\n\n"
+    modes_explanation = _("This UNO bot has four game modes: Classic, Sonic, Wild and Text.\n\n"
       " 🎻 The Classic mode uses the conventional UNO deck and there is no auto skip.\n"
-      " 🚀 The Sanic mode uses the conventional UNO deck and the bot automatically skips a player if he/she takes too long to play its turn\n"
+      " 🚀 The Sonic mode uses the conventional UNO deck and the bot automatically skips a player if he/she takes too long to play its turn\n"
       " 🐉 The Wild mode uses a deck with more special cards, less number variety and no auto skip.\n"
       " ✍️ The Text mode uses the conventional UNO deck but instead of stickers it uses the text.\n\n"
       "To change the game mode, the GAME CREATOR has to type the bot nickname and a space, "
-      "just like when playing a card, and all gamemode options should appear.")
+      "just like when playing a card, and all game mode options should appear.")
     send_async(context.bot, update.message.chat_id, text=modes_explanation,
                parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 

@@ -127,11 +127,11 @@ def add_mode_classic(results, anti_cheat=None):
 
 
 def add_mode_fast(results, anti_cheat=None):
-    """Change mode to classic"""
+    """Change mode to fast"""
     results.append(
         InlineQueryResultArticle(
             encode_result_id("mode_fast", anti_cheat),
-            title=_("🚀 Sanic mode"),
+            title=_("🚀 Sonic mode"),
             input_message_content=
             InputTextMessageContent(_('Gotta go fast! 🚀'))
         )
@@ -139,7 +139,7 @@ def add_mode_fast(results, anti_cheat=None):
 
 
 def add_mode_wild(results, anti_cheat=None):
-    """Change mode to classic"""
+    """Change mode to wild"""
     results.append(
         InlineQueryResultArticle(
             encode_result_id("mode_wild", anti_cheat),

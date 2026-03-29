@@ -22,8 +22,8 @@ To run the bot yourself, you will need:
 - The Python source code now lives under the `unobot/` package (`core`, `ui`, `handlers`, `services`, `infra`, `common`, `persistence`, `i18n`).
 - By default, the SQLite database path is the project-root `uno.sqlite3` (override with `UNO_DB`).
 
-You can change some gameplay parameters like turn times, minimum amount of players and default gamemode in `config.json`.
-Current gamemodes available: classic, fast and wild. Check the details with the `/modes` command.
+You can change some gameplay parameters like turn times, minimum amount of players and default game mode in `config.json`.
+Current game modes available: classic, fast and wild. Check the details with the `/modes` command.
 
 You can also add synthetic players with `/add_bot` (optionally `/add_bot 3` to add several). The first built-in bot uses a random strategy: it plays a random valid card, chooses a valid color at random, or draws/passes when needed.
 

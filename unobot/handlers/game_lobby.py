@@ -4,7 +4,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from unobot.infra.config import DEFAULT_GAMEMODE
+from unobot.infra.config import DEFAULT_GAME_MODE
 from unobot.common.errors import AlreadyJoinedError, DeckEmptyError, LobbyClosedError, NoGameInChatError, NotEnoughPlayersError
 from unobot.i18n.internationalization import _, __, user_locale
 from unobot.infra.shared_vars import gm
@@ -50,7 +50,7 @@ def new_game(update: Update, context: CallbackContext):
     game = gm.new_game(update.message.chat)
     game.starter = update.message.from_user
     game.owner.append(update.message.from_user.id)
-    game.mode = DEFAULT_GAMEMODE
+    game.mode = DEFAULT_GAME_MODE
     send_async(
         context.bot,
         chat_id,

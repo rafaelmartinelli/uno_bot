@@ -1,0 +1,13 @@
+{
+    "token": "XXX",
+    "admin_list": [123],
+    "open_lobby": true,
+    "enable_translations": false,
+    "workers": 32,
+    "default_game_mode": "classic",
+    "waiting_time": 30,
+    "time_removal_after_skip": 10,
+    "min_fast_turn_time": 15,
+    "min_players": 2,
+    "bot_action_delay": 4
+}

@@ -19,7 +19,7 @@
 
 
 import logging
-from unobot.infra.config import ADMIN_LIST, OPEN_LOBBY, DEFAULT_GAMEMODE, ENABLE_TRANSLATIONS
+from unobot.infra.config import ADMIN_LIST, OPEN_LOBBY, DEFAULT_GAME_MODE, ENABLE_TRANSLATIONS
 from datetime import datetime
 
 from unobot.core.deck import Deck
@@ -34,7 +34,7 @@ class Game(object):
     draw_counter = 0
     players_won = 0
     starter = None
-    mode = DEFAULT_GAMEMODE
+    mode = DEFAULT_GAME_MODE
     job = None
     owner = ADMIN_LIST
     open = OPEN_LOBBY
@@ -91,7 +91,7 @@ class Game(object):
     def _first_card_(self):
         # In case that the player did not select a game mode
         if not self.deck.cards:
-            self.set_mode(DEFAULT_GAMEMODE)
+            self.set_mode(DEFAULT_GAME_MODE)
 
         # The first card should not be a special card
         while not self.last_card or self.last_card.special:
