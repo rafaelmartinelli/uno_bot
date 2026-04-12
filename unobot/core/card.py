@@ -32,7 +32,7 @@ COLOR_ICONS = {
     BLUE: '💙',
     GREEN: '💚',
     YELLOW: '💛',
-    BLACK: '⬛️'
+    BLACK: '🖤',
 }
 
 # Values
