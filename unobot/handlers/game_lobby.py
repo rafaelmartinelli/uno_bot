@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from telegram import Update
+from telegram import Update, Message, User, Chat
 from telegram.ext import CallbackContext
 
 from unobot.infra.config import DEFAULT_GAME_MODE
@@ -30,30 +30,32 @@ def notify_me(update: Update, context: CallbackContext):
 @user_locale
 def new_game(update: Update, context: CallbackContext):
     """Handler for the /new command."""
-    chat_id = update.message.chat_id
 
-    if update.message.chat.type == 'private':
+    message: Message = update.message
+    chat: Chat = message.chat
+
+    if chat.type == 'private':
         help_handler(update, context)
         return
 
-    if update.message.chat_id in gm.remind_dict:
-        for user in gm.remind_dict[update.message.chat_id]:
+    if message.chat_id in gm.remind_dict:
+        for user in gm.remind_dict[message.chat_id]:
             send_async(
                 context.bot,
                 user,
                 text=_("A new game has been started in {title}").format(
-                    title=update.message.chat.title
+                    title=chat.title
                 ),
             )
-        del gm.remind_dict[update.message.chat_id]
+        del gm.remind_dict[message.chat_id]
 
-    game = gm.new_game(update.message.chat)
-    game.starter = update.message.from_user
-    game.owner.append(update.message.from_user.id)
+    game = gm.new_game(chat)
+    game.starter = message.from_user
+    game.owner.append(message.from_user.id)
     game.mode = DEFAULT_GAME_MODE
     send_async(
         context.bot,
-        chat_id,
+        message.chat_id,
         text=_("Created a new game! Join the game with /join and start the game with /start"),
     )
 

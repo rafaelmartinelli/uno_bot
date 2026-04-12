@@ -21,8 +21,12 @@
 import logging
 from datetime import datetime
 
+from telegram import User
+
 from unobot.core import card as c
 from unobot.common.errors import DeckEmptyError
+from unobot.core.game import Game
+from unobot.core.card import Card
 from unobot.infra.config import WAITING_TIME
 
 
@@ -34,13 +38,13 @@ class Player(object):
     other players by placing itself behind the current player.
     """
 
-    def __init__(self, game, user):
+    def __init__(self, game: Game, user: User):
         self.cards = list()
         self.game = game
         self.user = user
         self.logger = logging.getLogger(__name__)
 
-        # Check if this player is the first player in this game.
+        # Check if the game has already started.
         if game.current_player:
             self.next = game.current_player
             self.prev = game.current_player.prev
@@ -92,7 +96,7 @@ class Player(object):
         return self._next if not self.game.reversed else self._prev
 
     @next.setter
-    def next(self, player):
+    def next(self, player: Player):
         if not self.game.reversed:
             self._next = player
         else:
@@ -103,7 +107,7 @@ class Player(object):
         return self._prev if not self.game.reversed else self._next
 
     @prev.setter
-    def prev(self, player):
+    def prev(self, player: Player):
         if not self.game.reversed:
             self._prev = player
         else:
@@ -124,7 +128,7 @@ class Player(object):
             self.game.draw_counter = 0
             self.drew = True
 
-    def play(self, card):
+    def play(self, card: Card):
         """Plays a card and removes it from hand"""
         self.cards.remove(card)
         self.game.play_card(card)
@@ -156,7 +160,7 @@ class Player(object):
 
         return playable
 
-    def _card_playable(self, card):
+    def _card_playable(self, card: Card):
         """Check a single card if it can be played"""
 
         is_playable = True
@@ -171,10 +175,6 @@ class Player(object):
             is_playable = False
         elif last.special == c.DRAW_FOUR and self.game.draw_counter:
             self.logger.debug("Player has to draw and can't counter")
-            is_playable = False
-        elif (last.special == c.CHOOSE or last.special == c.DRAW_FOUR) and \
-                (card.special == c.CHOOSE or card.special == c.DRAW_FOUR):
-            self.logger.debug("Can't play colorchooser on another one")
             is_playable = False
         elif not last.color:
             self.logger.debug("Last card has no color")

@@ -20,6 +20,8 @@
 
 import logging
 
+from telegram import User, Chat
+
 from unobot.bots import BotIdentity
 from unobot.core.game import Game
 from unobot.core.player import Player
@@ -39,7 +41,7 @@ class GameManager(object):
 
         self.logger = logging.getLogger(__name__)
 
-    def new_game(self, chat):
+    def new_game(self, chat: Chat):
         """
         Create a new game in this chat
         """
@@ -57,7 +59,7 @@ class GameManager(object):
         self.chatid_games[chat.id].append(game)
         return game
 
-    def join_game(self, user, chat):
+    def join_game(self, user: User, chat: Chat):
         """ Create a player from the Telegram user and add it to the game """
         self.logger.info("Joining game with id " + str(chat.id))
 
@@ -98,7 +100,7 @@ class GameManager(object):
         self.userid_current[user.id] = player
         return player
 
-    def add_bot(self, chat, name = ''):
+    def add_bot(self, chat: Chat, name: str = ''):
         """Create a synthetic bot player and add it to the current game."""
         bot_user = BotIdentity(
             id=self._next_bot_id,
@@ -120,7 +122,7 @@ class GameManager(object):
         self.userid_current[bot_user.id] = player
         return player
 
-    def leave_game(self, user, chat):
+    def leave_game(self, user: User, chat: Chat):
         """ Remove a player from its current game """
 
         player = self.player_for_user_in_chat(user, chat)
@@ -158,7 +160,7 @@ class GameManager(object):
                 del self.userid_current[user.id]
                 del self.userid_players[user.id]
 
-    def end_game(self, chat, user):
+    def end_game(self, chat: Chat, user: User):
         """
         End a game
         """
@@ -204,14 +206,14 @@ class GameManager(object):
         if not self.chatid_games[chat.id]:
             del self.chatid_games[chat.id]
 
-    def player_for_user_in_chat(self, user, chat):
+    def player_for_user_in_chat(self, user: User, chat: Chat):
         players = self.userid_players.get(user.id, list())
         for player in players:
             if player.game.chat.id == chat.id:
                 return player
         return None
 
-    def _create_player(self, game, user):
+    def _create_player(self, game: Game, user: User):
         player = Player(game, user)
         if not game.started:
             return player
