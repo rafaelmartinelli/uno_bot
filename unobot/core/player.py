@@ -20,6 +20,7 @@
 
 import logging
 from datetime import datetime
+from typing import Self
 
 from telegram import User
 
@@ -96,7 +97,7 @@ class Player(object):
         return self._next if not self.game.reversed else self._prev
 
     @next.setter
-    def next(self, player: Player):
+    def next(self, player: Self):
         if not self.game.reversed:
             self._next = player
         else:
@@ -107,7 +108,7 @@ class Player(object):
         return self._prev if not self.game.reversed else self._next
 
     @prev.setter
-    def prev(self, player: Player):
+    def prev(self, player: Self):
         if not self.game.reversed:
             self._prev = player
         else:
@@ -171,10 +172,10 @@ class Player(object):
             self.logger.debug("Card's color or value doesn't match")
             is_playable = False
         elif last.value == c.DRAW_TWO and not card.value == c.DRAW_TWO and self.game.draw_counter:
-            self.logger.debug("Player has to draw and can't counter")
+            self.logger.debug("Self has to draw and can't counter")
             is_playable = False
         elif last.special == c.DRAW_FOUR and self.game.draw_counter and card.special != c.DRAW_FOUR:
-            self.logger.debug("Player has to draw and can't counter")
+            self.logger.debug("Self has to draw and can't counter")
             is_playable = False
         elif not last.color:
             self.logger.debug("Last card has no color")
