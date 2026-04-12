@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from telegram import InlineQueryResultsButton, Update
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
 from unobot.core import card as c
@@ -134,7 +135,7 @@ async def process_result(update: Update, context: CallbackContext):
             chat.id,
             text=__("Cheat attempt by {name}", multi=game.translate).format(
                 name=display_name(player.user)
-            ),
+            ), parse_mode=ParseMode.HTML, disable_web_page_preview=True
         )
         return
     if result_id == 'call_bluff':
@@ -166,6 +167,6 @@ def reset_waiting_time(bot, player):
             text=__("Waiting time for {name} has been reset to {time} seconds", multi=player.game.translate).format(
                 name=display_name(player.user),
                 time=WAITING_TIME,
-            ),
+            ), parse_mode=ParseMode.HTML, disable_web_page_preview=True
         )
 

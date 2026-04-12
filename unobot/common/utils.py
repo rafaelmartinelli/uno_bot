@@ -24,6 +24,9 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+
+from html import escape
+
 from telegram import Update
 from telegram.error import BadRequest, Forbidden, RetryAfter, TelegramError
 from telegram.ext import CallbackContext
@@ -48,12 +51,13 @@ def list_subtract(list1, list2):
     return list(sorted(list1))
 
 
-def display_name(user):
-    """ Get the current players name including their username, if possible """
-    user_name = user.first_name
+def display_name(user) -> str:
+    """Return first name; if username exists, return first name linked to profile."""
+    first = escape(user.first_name or '')
     if user.username:
-        user_name += ' (@' + user.username + ')'
-    return user_name
+        username = escape(user.username)
+        return f'<a href="https://t.me/{username}">{first}</a>'
+    return first
 
 
 def display_color(color):

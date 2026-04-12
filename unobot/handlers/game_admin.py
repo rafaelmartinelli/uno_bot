@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
 from unobot.common.errors import DeckEmptyError, NoGameInChatError, NotEnoughPlayersError
@@ -41,6 +42,7 @@ def add_bot(update: Update, context: CallbackContext):
                 name=game.starter.first_name
             ),
             reply_to_message_id=update.message.message_id,
+            parse_mode = ParseMode.HTML
         )
         return
 
@@ -117,6 +119,7 @@ def kill_game(update: Update, context: CallbackContext):
                 name=game.starter.first_name
             ),
             reply_to_message_id=update.message.message_id,
+            parse_mode = ParseMode.HTML
         )
 
 
@@ -158,6 +161,7 @@ def kick_player(update: Update, context: CallbackContext):
                 name=game.starter.first_name
             ),
             reply_to_message_id=update.message.message_id,
+            parse_mode = ParseMode.HTML
         )
         return
 
@@ -181,25 +185,20 @@ def kick_player(update: Update, context: CallbackContext):
             text=_("Player {name} is not found in the current game.").format(
                 name=display_name(kicked)
             ),
-            reply_to_message_id=update.message.message_id,
+            reply_to_message_id=update.message.message_id, parse_mode=ParseMode.HTML, disable_web_page_preview=True
         )
         return
     except NotEnoughPlayersError:
         gm.end_game(chat, user)
-        send_async(context.bot, chat.id, text=_("{0} was kicked by {1}".format(display_name(kicked), display_name(user))))
+        send_async(context.bot, chat.id, text=_("{0} was kicked by {1}".format(display_name(kicked), display_name(user))), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         send_async(context.bot, chat.id, text=__("Game ended!", multi=game.translate))
         return
 
-    send_async(context.bot, chat.id, text=_("{0} was kicked by {1}".format(display_name(kicked), display_name(user))))
+    send_async(context.bot, chat.id, text=_("{0} was kicked by {1}".format(display_name(kicked), display_name(user))), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
     if not was_current_player or not getattr(game.current_player.user, 'is_bot', False):
-        send_async(
-            context.bot,
-            chat.id,
-            text=__("Okay. Next Player: {name}", multi=game.translate).format(
-                name=display_name(game.current_player.user)
-            ),
-            reply_to_message_id=update.message.message_id,
-        )
+        send_async(context.bot, chat.id, text=__("Okay. Next Player: {name}", multi=game.translate)
+            .format(name=display_name(game.current_player.user)),reply_to_message_id=update.message.message_id, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+
     if was_current_player:
         continue_game(context.bot, game, context.job_queue, announce_next_player=False)
 
@@ -253,7 +252,7 @@ def _set_lobby_state(update: Update, context: CallbackContext, is_open: bool):
         text=_("Only the game creator ({name}) and admin can do that.").format(
             name=game.starter.first_name
         ),
-        reply_to_message_id=update.message.message_id,
+        reply_to_message_id=update.message.message_id, parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
 
 
@@ -282,6 +281,6 @@ def _set_translation_state(update: Update, context: CallbackContext, enabled: bo
         text=_("Only the game creator ({name}) and admin can do that.").format(
             name=game.starter.first_name
         ),
-        reply_to_message_id=update.message.message_id,
+        reply_to_message_id=update.message.message_id, parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
 

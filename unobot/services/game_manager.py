@@ -19,6 +19,7 @@
 
 
 import logging
+from typing import Optional
 
 from telegram import User, Chat
 
@@ -27,6 +28,7 @@ from unobot.core.game import Game
 from unobot.core.player import Player
 from unobot.common.errors import (AlreadyJoinedError, LobbyClosedError, NoGameInChatError,
                     NotEnoughPlayersError, DeckEmptyError)
+from unobot.persistence.user_setting import UserSetting
 from unobot.services.promotions import send_promotion_async
 
 class GameManager(object):
@@ -98,6 +100,12 @@ class GameManager(object):
 
         players.append(player)
         self.userid_current[user.id] = player
+
+        us = UserSetting.get(id=user.id)
+        if not us:
+            us = UserSetting(id=user.id)
+        us.games_played += 1
+
         return player
 
     def add_bot(self, chat: Chat, name: str = ''):
@@ -206,7 +214,7 @@ class GameManager(object):
         if not self.chatid_games[chat.id]:
             del self.chatid_games[chat.id]
 
-    def player_for_user_in_chat(self, user: User, chat: Chat):
+    def player_for_user_in_chat(self, user: User, chat: Chat) -> Optional[Player]:
         players = self.userid_players.get(user.id, list())
         for player in players:
             if player.game.chat.id == chat.id:

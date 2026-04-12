@@ -48,7 +48,7 @@ async def select_game(update: Update, context: CallbackContext):
             group=gm.userid_current[user_id].game.chat.title
         ),
         reply_markup=InlineKeyboardMarkup(back),
-        parse_mode=ParseMode.HTML,
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
 
 
@@ -78,7 +78,7 @@ def status_update(update: Update, context: CallbackContext):
                 chat.id,
                 text=__("Removing {name} from the game", multi=game.translate).format(
                     name=display_name(user)
-                ),
+                ), parse_mode=ParseMode.HTML, disable_web_page_preview=True
             )
             if game.started and was_current_player:
                 continue_game(context.bot, game, context.job_queue)
@@ -129,6 +129,7 @@ def start_game(update: Update, context: CallbackContext):
                 chat.id,
                 text=first_message,
                 reply_markup=InlineKeyboardMarkup(choice),
+                parse_mode=ParseMode.HTML, disable_web_page_preview=True
             )
             continue_game(context.bot, game, context.job_queue, announce_next_player=False)
     elif len(context.args) and context.args[0] == 'select':

@@ -23,6 +23,7 @@
 from uuid import uuid4
 
 from telegram import InlineQueryResultArticle, InlineQueryResultCachedSticker, InputTextMessageContent
+from telegram.constants import ParseMode
 
 from unobot.core import card as c
 from unobot.common.utils import display_color, display_color_group, display_name
@@ -81,10 +82,7 @@ def add_other_cards(player, results, game):
 
 def player_list(game):
     """Generate list of player strings"""
-    return [_("{name} ({number} card)",
-              "{name} ({number} cards)",
-              len(player.cards))
-            .format(name=player.user.first_name, number=len(player.cards))
+    return [_("{name} ({number} card)", "{name} ({number} cards)", len(player.cards)).format(name=display_name(player.user), number=len(player.cards))
             for player in game.players]
 
 
@@ -265,13 +263,9 @@ def add_card(game, card, results, can_play, anti_cheat=None):
 def game_info(game):
     players = player_list(game)
     return InputTextMessageContent(
-        _("Current player: {name}")
-        .format(name=display_name(game.current_player.user)) +
-        "\n" +
-        _("Last card: {card}").format(card=repr(game.last_card)) +
-        "\n" +
-        _("Player: {player_list}",
-          "Players: {player_list}",
-          len(players))
-        .format(player_list=" -> ".join(players))
+        _("Current player: {name}").format(name=display_name(game.current_player.user)) + "\n    —\n" +
+        _("Last card: {card}").format(card=repr(game.last_card)) + "\n    —\n" +
+        _("Player:", "Players:", len(players)) + '\n' +
+        '\n'.join(f'• {player}' for player in players),
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )

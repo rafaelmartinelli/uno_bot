@@ -3,6 +3,7 @@ import random
 from dataclasses import dataclass
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.constants import ParseMode
 
 from unobot.core import card as c
 from unobot.core.game import Game
@@ -68,14 +69,9 @@ def _clear_bot_job(game):
 
 def _announce_next_player(bot, game):
     choice = [[InlineKeyboardButton(text=__("Make your choice!", multi=game.translate), switch_inline_query_current_chat='')]]
-    send_async(
-        bot,
-        game.chat.id,
-        text=__("Next player: {name}", multi=game.translate).format(
-            name=display_name(game.current_player.user)
-        ),
-        reply_markup=InlineKeyboardMarkup(choice),
-    )
+    send_async(bot, game.chat.id, text=__("Next player: {name}", multi=game.translate)
+        .format(name=display_name(game.current_player.user)), reply_markup=InlineKeyboardMarkup(choice), parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True)
 
 
 def _schedule_bot_turn(game, job_queue):
@@ -140,14 +136,9 @@ def do_bot_turn(bot, player):
 
 async def _announce_next_player_async(bot, game):
     choice = [[InlineKeyboardButton(text=__("Make your choice!", multi=game.translate), switch_inline_query_current_chat='')]]
-    await send_message_with_retry(
-        bot,
-        game.chat.id,
-        text=__("Next player: {name}", multi=game.translate).format(
-            name=display_name(game.current_player.user)
-        ),
-        reply_markup=InlineKeyboardMarkup(choice),
-    )
+    await send_message_with_retry(bot, game.chat.id, text=__("Next player: {name}", multi=game.translate)
+        .format(name=display_name(game.current_player.user)), reply_markup=InlineKeyboardMarkup(choice), parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True)
 
 
 async def _perform_bot_turn(bot, game, job_queue):
@@ -227,7 +218,7 @@ def do_skip(bot, player, job_queue=None):
         else:
             send_async(bot, chat.id, text=__("Waiting time to skip this player has "
                 "been reduced to {time} seconds.\nNext player: {name}", multi=game.translate)
-                .format(time=n, name=display_name(next_player.user)))
+                .format(time=n, name=display_name(next_player.user)), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         logger.info("{player} was skipped! ".format(player=display_name(player.user)))
 
         game.turn()
@@ -240,27 +231,20 @@ def do_skip(bot, player, job_queue=None):
                 send_async(bot, chat.id,
                            text=__("{name1} ran out of time "
                                 "and has been removed from the game!", multi=game.translate)
-                           .format(name1=display_name(skipped_player.user)))
+                           .format(name1=display_name(skipped_player.user)), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
             else:
-                send_async(bot, chat.id,
-                           text=__("{name1} ran out of time "
-                                "and has been removed from the game!\n"
-                                "Next player: {name2}", multi=game.translate)
-                           .format(name1=display_name(skipped_player.user),
-                                   name2=display_name(next_player.user)))
-            logger.info("{player} was skipped! "
-                    .format(player=display_name(player.user)))
+                send_async(bot, chat.id, text=__("{name1} ran out of time and has been removed from the game!\nNext player: {name2}",
+                    multi=game.translate).format(name1=display_name(skipped_player.user), name2=display_name(next_player.user)), parse_mode=ParseMode.HTML,
+                    disable_web_page_preview=True)
+
+            logger.info("{player} was skipped! ".format(player=display_name(player.user)))
             continue_game(bot, game, job_queue, announce_next_player=False)
 
         except NotEnoughPlayersError:
-            send_async(bot, chat.id,
-                       text=__("{name} ran out of time "
-                               "and has been removed from the game!\n"
-                               "The game ended.", multi=game.translate)
-                       .format(name=display_name(skipped_player.user)))
+            send_async(bot, chat.id, text=__("{name} ran out of time and has been removed from the game!\nThe game ended.",
+                multi=game.translate).format(name=display_name(skipped_player.user)), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
             gm.end_game(chat, skipped_player.user)
-
 
 
 @db_session
@@ -288,13 +272,11 @@ def do_play_card(bot, player, result_id):
         send_async(bot, chat.id, text="UNO!")
 
     if len(player.cards) == 0:
-        send_async(bot, chat.id, text=__("{name} won!", multi=game.translate).format(name=user.first_name))
+        send_async(bot, chat.id, text=__("{name} won!", multi=game.translate).format(name=user.first_name), parse_mode=ParseMode.HTML,
+            disable_web_page_preview=True)
 
         if us and us.stats:
-            us.games_played += 1
-
-            if game.players_won == 0:
-                us.first_places += 1
+            us.first_places += 1
 
         send_async(bot, chat.id, text=__("Game ended!", multi=game.translate))
         gm.end_game(chat, user)
@@ -327,7 +309,7 @@ def do_call_bluff(bot, player):
 
     if player.prev.bluffing:
         send_async(bot, chat.id, text=__("Bluff called! Giving 4 cards to {name}", multi=game.translate)
-            .format(name=player.prev.user.first_name))
+            .format(name=player.prev.user.first_name), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
         try:
             player.prev.draw()
@@ -337,7 +319,7 @@ def do_call_bluff(bot, player):
     else:
         game.draw_counter += 2
         send_async(bot, chat.id, text=__("{name1} didn't bluff! Giving 6 cards to {name2}", multi=game.translate)
-            .format(name1=player.prev.user.first_name, name2=player.user.first_name))
+            .format(name1=player.prev.user.first_name, name2=player.user.first_name), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         try:
             player.draw()
         except DeckEmptyError:

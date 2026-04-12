@@ -4,6 +4,7 @@ Promote other UNO bots
 import random
 import sys
 
+from telegram.constants import ParseMode
 
 # Promotion messages and their weights
 PROMOTIONS = {
@@ -23,7 +24,7 @@ def send_promotion(bot, chat_id, chance=1.0):
     """ (Maybe) send a promotion message """
     if random.random() <= chance:
         from unobot.common.utils import send_async
-        send_async(bot, chat_id, text=get_promotion(), parse_mode='HTML')
+        send_async(bot, chat_id, text=get_promotion(), parse_mode=ParseMode.HTML, disable_web_page_preview=False)
 
 
 def send_promotion_async(chat, chance=1.0):

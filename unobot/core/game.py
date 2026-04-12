@@ -32,7 +32,6 @@ class Game(object):
     choosing_color = False
     started = False
     draw_counter = 0
-    players_won = 0
     starter = None
     mode = DEFAULT_GAME_MODE
     job = None

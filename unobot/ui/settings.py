@@ -33,9 +33,7 @@ def show_settings(update: Update, context: CallbackContext):
     chat = update.message.chat
 
     if update.message.chat.type != 'private':
-        send_async(context.bot, chat.id,
-                   text=_("Please edit your settings in a private chat with "
-                          "the bot."))
+        send_async(context.bot, chat.id, text=_("Please edit your settings in a private chat with the bot."))
         return
 
     us = UserSetting.get(id=update.message.from_user.id)
@@ -49,9 +47,7 @@ def show_settings(update: Update, context: CallbackContext):
         stats = '❌' + ' ' + _("Delete all statistics")
 
     kb = [[stats], ['🌍' + ' ' + _("Language")]]
-    send_async(context.bot, chat.id, text='🔧' + ' ' + _("Settings"),
-               reply_markup=ReplyKeyboardMarkup(keyboard=kb,
-                                                one_time_keyboard=True))
+    send_async(context.bot, chat.id, text='🔧' + ' ' + _("Settings"), reply_markup=ReplyKeyboardMarkup(keyboard=kb, one_time_keyboard=True))
 
 
 @user_locale
@@ -70,12 +66,8 @@ def kb_select(update: Update, context: CallbackContext):
         send_async(context.bot, chat.id, text=_("Enabled statistics!"))
 
     elif option == '🌍':
-        kb = [[locale + ' - ' + descr]
-              for locale, descr
-              in sorted(available_locales.items())]
-        send_async(context.bot, chat.id, text=_("Select locale"),
-                   reply_markup=ReplyKeyboardMarkup(keyboard=kb,
-                                                    one_time_keyboard=True))
+        kb = [[locale + ' - ' + descr] for locale, descr in sorted(available_locales.items())]
+        send_async(context.bot, chat.id, text=_("Select locale"), reply_markup=ReplyKeyboardMarkup(keyboard=kb, one_time_keyboard=True))
 
     elif option == '❌':
         us = UserSetting.get(id=user.id)
@@ -105,9 +97,5 @@ def locale_select(update: Update, context: CallbackContext):
 
 def register():
     dispatcher.add_handler(CommandHandler('settings', show_settings))
-    dispatcher.add_handler(MessageHandler(filters.Regex('^([' + '📊' +
-                                                        '🌍' +
-                                                        '❌' + ']) .+$'),
-                                        kb_select))
-    dispatcher.add_handler(MessageHandler(filters.Regex(r'^(\w\w_\w\w) - .*'),
-                                        locale_select))
+    dispatcher.add_handler(MessageHandler(filters.Regex('^([' + '📊' + '🌍' + '❌' + ']) .+$'), kb_select))
+    dispatcher.add_handler(MessageHandler(filters.Regex(r'^(\w\w_\w\w) - .*'), locale_select))

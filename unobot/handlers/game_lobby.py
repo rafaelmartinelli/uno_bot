@@ -143,7 +143,7 @@ def leave_game(update: Update, context: CallbackContext):
                     text=__("Okay. Next Player: {name}", multi=game.translate).format(
                         name=display_name(game.current_player.user)
                     ),
-                    reply_to_message_id=update.message.message_id,
+                    reply_to_message_id=update.message.message_id, parse_mode=ParseMode.HTML, disable_web_page_preview=True
                 )
             if was_current_player:
                 continue_game(context.bot, game, context.job_queue, announce_next_player=False)
@@ -154,6 +154,6 @@ def leave_game(update: Update, context: CallbackContext):
                 text=__("{name} left the game before it started.", multi=game.translate).format(
                     name=display_name(user)
                 ),
-                reply_to_message_id=update.message.message_id,
+                reply_to_message_id=update.message.message_id, parse_mode=ParseMode.HTML, disable_web_page_preview=True
             )
 
