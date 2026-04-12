@@ -318,8 +318,8 @@ def do_call_bluff(bot, player):
 
     else:
         game.draw_counter += 2
-        send_async(bot, chat.id, text=__("{name1} didn't bluff! Giving 6 cards to {name2}", multi=game.translate)
-            .format(name1=player.prev.user.first_name, name2=player.user.first_name), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+        send_async(bot, chat.id, text=__("{name1} didn't bluff! Giving {num} cards to {name2}", multi=game.translate)
+            .format(name1=player.prev.user.first_name, num=game.draw_counter, name2=player.user.first_name), parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         try:
             player.draw()
         except DeckEmptyError:

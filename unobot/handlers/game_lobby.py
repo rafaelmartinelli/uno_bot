@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from telegram import Update, Message, User, Chat
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
 from unobot.infra.config import DEFAULT_GAME_MODE
