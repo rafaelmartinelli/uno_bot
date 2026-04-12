@@ -290,10 +290,18 @@ CARDS_CLASSIC_COLORBLIND = {
 }
 
 STICKERS_OPTIONS = {
-    "option_draw": "BQADBAAD-AIAAl9XmQABxEjEcFM-VHIC",
-    "option_pass": "BQADBAAD-gIAAl9XmQABcEkAAbaZ4SicAg",
-    "option_bluff": "BQADBAADygIAAl9XmQABJoLfB9ntI2UC",
-    "option_info": "BQADBAADxAIAAl9XmQABC5v3Z77VLfEC",
+    "option_draw": "CAACAgQAAxkBAAEDMkVp2_UZYjjqvdVfqmfLbyZ4o-YulQACAgQAAkY0dA2Not5oFgTizzsE",
+    "option_pass": "CAACAgQAAxkBAAEDMkdp2_U3nW4O85mT_rzkGOdaBOlj-gACAwQAAkY0dA3HKSiX3hMVHTsE",
+    "option_bluff": "CAACAgQAAxkBAAEDMklp2_VK-IfcN4quvtqoRBPaAAGmMj4AAggEAAJGNHQNfvlNqV3UvN47BA",
+    "option_info": "CAACAgQAAxkBAAEDMktp2_VVD4mxFre7Pm4n9QwmcZn6dAACCgQAAkY0dA1NfCVzzXLqNzsE",
+}
+
+OTHER_STICKERS = {
+    "volcano_1": "CAACAgQAAxkBAAEDMk1p2_YMvVWicGfQjaveoZrWhUfWCgACmRMAArZUaVFJPl6ld_y8UjsE",
+    "volcano_2": "CAACAgQAAxkBAAEDMk9p2_YRnoCiqrVkhUR_9QbHDwyZSgACERMAArKMaVFJzT7PWuPXLjsE",
+    "volcano_3": "CAACAgQAAxkBAAEDMlFp2_YWXdJe-YWS3bqAOYdelC7vOwACPRIAAoj5aFFRzS9JfEI6pTsE",
+    "volcano_4": "CAACAgQAAxkBAAEDMlNp2_YbFS-ItBQQqFVqfzxB2jRjrwACFhIAAtpDaFHwa8QefSyxrzsE",
+    "volcano_5": "CAACAgQAAxkBAAEDMlVp2_YgfdSWpM5XlX2Jzb4Ujwq-yQACVhMAAut3aFEQ73oFumGbATsE",
 }
 
 # TODO: Support multiple card packs
@@ -301,6 +309,7 @@ STICKERS_OPTIONS = {
 STICKERS = {
     **CARDS_CLASSIC_COLORBLIND["normal"],
     **STICKERS_OPTIONS,
+    **OTHER_STICKERS,
 }
 
 STICKERS_GREY = {

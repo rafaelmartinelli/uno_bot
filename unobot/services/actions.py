@@ -1,4 +1,5 @@
 import logging
+import random
 from dataclasses import dataclass
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -12,7 +13,7 @@ from telegram.ext import CallbackContext
 from apscheduler.jobstores.base import JobLookupError
 
 from unobot.bots import get_strategy, is_bot_user
-from unobot.infra.config import BOT_ACTION_DELAY, TIME_REMOVAL_AFTER_SKIP, MIN_FAST_TURN_TIME
+from unobot.infra.config import BOT_ACTION_DELAY, TIME_REMOVAL_AFTER_SKIP, MIN_FAST_TURN_TIME, VOLCANO_PROBABILITY
 from unobot.common.errors import DeckEmptyError, NotEnoughPlayersError
 from unobot.i18n.internationalization import __
 from unobot.infra.shared_vars import gm
@@ -23,7 +24,7 @@ from unobot.common.utils import (
     display_color_group,
     game_is_running,
     send_message_with_retry,
-    send_sticker_with_retry,
+    send_sticker_with_retry, run_async,
 )
 
 logger = logging.getLogger(__name__)
@@ -160,27 +161,19 @@ async def _perform_bot_turn(bot, game, job_queue):
     name = display_name(player.user)
 
     if decision.action == 'play':
-        await send_message_with_retry(
-            bot,
-            chat.id,
-            text=__("{name} plays:", multi=game.translate).format(name=name),
-        )
+        await send_message_with_retry(bot, chat.id, text=__("{name} plays:", multi=game.translate).format(name=name))
         if game.mode == 'text':
             await send_message_with_retry(bot, chat.id, text=repr(decision.card))
         else:
             await send_sticker_with_retry(bot, chat.id, sticker=c.STICKERS[str(decision.card)])
         do_play_card(bot, player, str(decision.card))
+
     elif decision.action == 'draw':
         draw_count = game.draw_counter or 1
-        await send_message_with_retry(
-            bot,
-            chat.id,
-            text=__("{name} draws {number} card.",
-                    "{name} draws {number} cards.",
-                    draw_count,
-                    multi=game.translate).format(name=name, number=draw_count),
-        )
+        await send_message_with_retry(bot, chat.id, text=__("{name} draws {number} card.","{name} draws {number} cards.",
+            draw_count, multi=game.translate).format(name=name, number=draw_count))
         do_draw(bot, player)
+
     elif decision.action == 'pass':
         await send_message_with_retry(
             bot,
@@ -188,16 +181,12 @@ async def _perform_bot_turn(bot, game, job_queue):
             text=__("{name} passes.", multi=game.translate).format(name=name),
         )
         game.turn()
+
     elif decision.action == 'choose_color':
-        await send_message_with_retry(
-            bot,
-            chat.id,
-            text=__("{name} chooses {color}.", multi=game.translate).format(
-                name=name,
-                color=display_color_group(decision.color, game),
-            ),
-        )
+        await send_message_with_retry(bot, chat.id, text=__("{name} chooses {color}.", multi=game.translate).format(name=name,
+            color=display_color_group(decision.color, game)))
         game.choose_color(decision.color)
+
     else:
         raise ValueError(f"Unsupported bot action: {decision.action}")
 
@@ -233,21 +222,14 @@ def do_skip(bot, player, job_queue=None):
 
         n = skipped_player.waiting_time
         if getattr(next_player.user, 'is_bot', False):
-            send_async(bot, chat.id,
-                       text=__("Waiting time to skip this player has "
-                            "been reduced to {time} seconds.", multi=game.translate)
-                       .format(time=n)
-            )
+            send_async(bot, chat.id,text=__("Waiting time to skip this player has "
+                "been reduced to {time} seconds.", multi=game.translate).format(time=n))
         else:
-            send_async(bot, chat.id,
-                       text=__("Waiting time to skip this player has "
-                            "been reduced to {time} seconds.\n"
-                            "Next player: {name}", multi=game.translate)
-                       .format(time=n,
-                               name=display_name(next_player.user))
-            )
-        logger.info("{player} was skipped! "
-                    .format(player=display_name(player.user)))
+            send_async(bot, chat.id, text=__("Waiting time to skip this player has "
+                "been reduced to {time} seconds.\nNext player: {name}", multi=game.translate)
+                .format(time=n, name=display_name(next_player.user)))
+        logger.info("{player} was skipped! ".format(player=display_name(player.user)))
+
         game.turn()
         continue_game(bot, game, job_queue, announce_next_player=False)
 
@@ -306,9 +288,7 @@ def do_play_card(bot, player, result_id):
         send_async(bot, chat.id, text="UNO!")
 
     if len(player.cards) == 0:
-        send_async(bot, chat.id,
-                   text=__("{name} won!", multi=game.translate)
-                   .format(name=user.first_name))
+        send_async(bot, chat.id, text=__("{name} won!", multi=game.translate).format(name=user.first_name))
 
         if us and us.stats:
             us.games_played += 1
@@ -320,21 +300,23 @@ def do_play_card(bot, player, result_id):
         gm.end_game(chat, user)
 
 
-def do_draw(bot, player):
+def do_draw(bot, player: Player):
     """Does the drawing"""
     game = player.game
-    draw_counter_before = game.draw_counter
 
+    if game.mode == 'volcano' and game.draw_counter == 0:
+        if random.random() < VOLCANO_PROBABILITY:
+            counter = random.choices([1, 2, 3, 4, 5], weights=[5, 4, 3, 2, 1])[0]
+            game.draw_counter = counter
+            run_async(bot.send_sticker(game.chat.id, sticker=c.STICKERS['volcano_{}'.format(counter)]))
+
+    draw_counter_before = game.draw_counter
     try:
         player.draw()
     except DeckEmptyError:
-        send_async(bot, player.game.chat.id,
-                   text=__("There are no more cards in the deck.",
-                           multi=game.translate))
+        send_async(bot, player.game.chat.id, text=__("There are no more cards in the deck.", multi=game.translate))
 
-    if (game.last_card.value == c.DRAW_TWO or
-        game.last_card.special == c.DRAW_FOUR) and \
-            draw_counter_before > 0:
+    if (game.last_card.value == c.DRAW_TWO or game.last_card.special == c.DRAW_FOUR) and draw_counter_before > 0:
         game.turn()
 
 
@@ -344,31 +326,22 @@ def do_call_bluff(bot, player):
     chat = game.chat
 
     if player.prev.bluffing:
-        send_async(bot, chat.id,
-                   text=__("Bluff called! Giving 4 cards to {name}",
-                           multi=game.translate)
-                   .format(name=player.prev.user.first_name))
+        send_async(bot, chat.id, text=__("Bluff called! Giving 4 cards to {name}", multi=game.translate)
+            .format(name=player.prev.user.first_name))
 
         try:
             player.prev.draw()
         except DeckEmptyError:
-            send_async(bot, player.game.chat.id,
-                       text=__("There are no more cards in the deck.",
-                               multi=game.translate))
+            send_async(bot, player.game.chat.id, text=__("There are no more cards in the deck.", multi=game.translate))
 
     else:
         game.draw_counter += 2
-        send_async(bot, chat.id,
-                   text=__("{name1} didn't bluff! Giving 6 cards to {name2}",
-                           multi=game.translate)
-                   .format(name1=player.prev.user.first_name,
-                           name2=player.user.first_name))
+        send_async(bot, chat.id, text=__("{name1} didn't bluff! Giving 6 cards to {name2}", multi=game.translate)
+            .format(name1=player.prev.user.first_name, name2=player.user.first_name))
         try:
             player.draw()
         except DeckEmptyError:
-            send_async(bot, player.game.chat.id,
-                       text=__("There are no more cards in the deck.",
-                               multi=game.translate))
+            send_async(bot, player.game.chat.id,text=__("There are no more cards in the deck.", multi=game.translate))
 
     game.turn()
 

@@ -49,3 +49,4 @@ TIME_REMOVAL_AFTER_SKIP = int(os.getenv("TIME_REMOVAL_AFTER_SKIP", config.get("t
 MIN_FAST_TURN_TIME = int(os.getenv("MIN_FAST_TURN_TIME", config.get("min_fast_turn_time", 15)))
 MIN_PLAYERS = int(os.getenv("MIN_PLAYERS", config.get("min_players", 2)))
 BOT_ACTION_DELAY = float(os.getenv("BOT_ACTION_DELAY", config.get("bot_action_delay", 1.0)))
+VOLCANO_PROBABILITY = float(os.getenv("VOLCANO_PROBABILITY", config.get("volcano_probability", 0.5)))

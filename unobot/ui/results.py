@@ -150,6 +150,12 @@ def add_mode_wild(results, anti_cheat=None):
     )
 
 
+def add_mode_volcano(results, anti_cheat=None):
+    """Change mode to volcano"""
+    results.append(InlineQueryResultArticle(encode_result_id("mode_volcano", anti_cheat), title=_("🌋 Volcano mode 🌋"),
+        input_message_content=InputTextMessageContent(_('KABOOM!!! 🌋'))))
+
+
 def add_mode_text(results, anti_cheat=None):
     """Change mode to text"""
     results.append(
@@ -167,17 +173,10 @@ def add_draw(player, results, anti_cheat=None):
     n = player.game.draw_counter or 1
 
     result_id = encode_result_id("draw", anti_cheat)
-    message = __("Drawing {number} card",
-                 'Drawing {number} cards', n,
-                 multi=player.game.translate).format(number=n)
+    message = __("Drawing {number} card", 'Drawing {number} cards', n, multi=player.game.translate).format(number=n)
 
-    results.append(
-        InlineQueryResultCachedSticker(
-            id=result_id,
-            sticker_file_id=c.STICKERS['option_draw'],
-            input_message_content=InputTextMessageContent(message),
-        )
-    )
+    results.append(InlineQueryResultCachedSticker(id=result_id, sticker_file_id=c.STICKERS['option_draw'],
+        input_message_content=InputTextMessageContent(message)))
 
 
 def add_gameinfo(game, results):

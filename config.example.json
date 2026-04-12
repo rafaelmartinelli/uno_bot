@@ -9,5 +9,6 @@
     "time_removal_after_skip": 10,
     "min_fast_turn_time": 15,
     "min_players": 2,
-    "bot_action_delay": 4
+    "bot_action_delay": 4,
+    "volcano_probability": 0.5
 }

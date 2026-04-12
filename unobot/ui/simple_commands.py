@@ -76,10 +76,11 @@ def help_handler(update: Update, context: CallbackContext):
 @user_locale
 def modes(update: Update, context: CallbackContext):
     """Handler for the /help command"""
-    modes_explanation = _("This UNO bot has four game modes: Classic, Sonic, Wild and Text.\n\n"
+    modes_explanation = _("This UNO bot has five game modes: Classic, Sonic, Wild, Volcano and Text.\n\n"
       " 🎻 The Classic mode uses the conventional UNO deck and there is no auto skip.\n"
       " 🚀 The Sonic mode uses the conventional UNO deck and the bot automatically skips a player if he/she takes too long to play its turn\n"
       " 🐉 The Wild mode uses a deck with more special cards, less number variety and no auto skip.\n"
+      " 🌋 The Volcano mode gives four cards when the player draws with a given probability.\n"
       " ✍️ The Text mode uses the conventional UNO deck but instead of stickers it uses the text.\n\n"
       "To change the game mode, the GAME CREATOR has to type the bot nickname and a space, "
       "just like when playing a card, and all game mode options should appear.")

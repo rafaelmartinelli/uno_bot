@@ -18,6 +18,7 @@ from unobot.ui.results import (
     add_mode_fast,
     add_mode_text,
     add_mode_wild,
+    add_mode_volcano,
     add_no_game,
     add_not_started,
     add_other_cards,
@@ -55,6 +56,7 @@ async def reply_to_query(update: Update, context: CallbackContext):
                 add_mode_classic(results, anti_cheat=anti_cheat)
                 add_mode_fast(results, anti_cheat=anti_cheat)
                 add_mode_wild(results, anti_cheat=anti_cheat)
+                add_mode_volcano(results, anti_cheat=anti_cheat)
                 add_mode_text(results, anti_cheat=anti_cheat)
             else:
                 add_not_started(results)
@@ -122,7 +124,7 @@ async def process_result(update: Update, context: CallbackContext):
     if result_id.startswith('mode_'):
         mode = result_id[5:]
         game.set_mode(mode)
-        send_async(context.bot, chat.id, text=__("Gamemode changed to {mode}".format(mode=mode)))
+        send_async(context.bot, chat.id, text=__("Game mode changed to {mode}".format(mode=mode)))
         return
     if len(result_id) == 36:
         return
