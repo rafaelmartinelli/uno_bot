@@ -289,7 +289,7 @@ def do_draw(bot, player: Player):
 
     if game.mode == 'volcano' and game.draw_counter == 0:
         if random.random() < VOLCANO_PROBABILITY:
-            counter = random.choices([2, 3, 4, 5], weights=[4, 3, 2, 1])[0]
+            counter = random.choices([2, 3, 4, 5], weights=[8, 4, 2, 1])[0]
             game.draw_counter = counter
             run_async(bot.send_sticker(game.chat.id, sticker=c.STICKERS['volcano_{}'.format(counter)]))
 
