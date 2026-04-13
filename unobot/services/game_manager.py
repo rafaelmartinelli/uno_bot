@@ -104,7 +104,8 @@ class GameManager(object):
         us = UserSetting.get(id=user.id)
         if not us:
             us = UserSetting(id=user.id)
-        us.games_played += 1
+        if us and us.stats:
+            us.games_played += 1
 
         return player
 
