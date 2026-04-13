@@ -21,6 +21,7 @@
 import logging
 from typing import Optional
 
+from pony.orm.core import db_session
 from telegram import User, Chat
 
 from unobot.bots import BotIdentity
@@ -61,6 +62,7 @@ class GameManager(object):
         self.chatid_games[chat.id].append(game)
         return game
 
+    @db_session
     def join_game(self, user: User, chat: Chat):
         """ Create a player from the Telegram user and add it to the game """
         self.logger.info("Joining game with id " + str(chat.id))

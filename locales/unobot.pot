@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: uno_bot 1.0\n"
 "Report-Msgid-Bugs-To: uno@jhoeke.de\n"
-"POT-Creation-Date: 2019-08-28 14:21+0800\n"
+"POT-Creation-Date: 2026-04-12 21:26-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,176 +17,187 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: actions.py:48
+#: unobot/common/utils.py:66 unobot/common/utils.py:79
 #, python-brace-format
-msgid ""
-"Waiting time to skip this player has been reduced to {time} seconds.\n"
-"Next player: {name}"
+msgid "{emoji} Red"
 msgstr ""
 
-#: actions.py:54 actions.py:69
+#: unobot/common/utils.py:68 unobot/common/utils.py:82
 #, python-brace-format
-msgid "{player} was skipped! "
+msgid "{emoji} Blue"
 msgstr ""
 
-#: actions.py:64
+#: unobot/common/utils.py:70 unobot/common/utils.py:85
 #, python-brace-format
-msgid ""
-"{name1} ran out of time and has been removed from the game!\n"
-"Next player: {name2}"
+msgid "{emoji} Green"
 msgstr ""
 
-#: actions.py:76
+#: unobot/common/utils.py:72 unobot/common/utils.py:88
 #, python-brace-format
-msgid ""
-"{name} ran out of time and has been removed from the game!\n"
-"The game ended."
+msgid "{emoji} Yellow"
 msgstr ""
 
-#: actions.py:101
-msgid "Please choose a color"
-msgstr ""
-
-#: actions.py:108
-#, python-brace-format
-msgid "{name} won!"
-msgstr ""
-
-#: actions.py:123 bot.py:119 bot.py:199 bot.py:261 bot.py:340
-msgid "Game ended!"
-msgstr ""
-
-#: actions.py:141 actions.py:165 actions.py:179
-msgid "There are no more cards in the deck."
-msgstr ""
-
-#: actions.py:157
-#, python-brace-format
-msgid "Bluff called! Giving 4 cards to {name}"
-msgstr ""
-
-#: actions.py:171
-#, python-brace-format
-msgid "{name1} didn't bluff! Giving 6 cards to {name2}"
-msgstr ""
-
-#: bot.py:60
-msgid ""
-"Send this command in a group to be notified when a new game is started there."
-msgstr ""
-
-#: bot.py:83
-#, python-brace-format
-msgid "A new game has been started in {title}"
-msgstr ""
-
-#: bot.py:93
-msgid ""
-"Created a new game! Join the game with /join and start the game with /start"
-msgstr ""
-
-#: bot.py:110 bot.py:433 bot.py:461 bot.py:488 bot.py:516
+#: unobot/handlers/game_admin.py:32 unobot/handlers/game_admin.py:99
+#: unobot/handlers/game_admin.py:236 unobot/handlers/game_admin.py:265
 msgid "There is no running game in this chat."
 msgstr ""
 
-#: bot.py:123 bot.py:239
+#: unobot/handlers/game_admin.py:41 unobot/handlers/game_admin.py:118
+#: unobot/handlers/game_admin.py:160 unobot/handlers/game_admin.py:252
+#: unobot/handlers/game_admin.py:281
+#, python-brace-format
+msgid "Only the game creator ({name}) and admin can do that."
+msgstr ""
+
+#: unobot/handlers/game_admin.py:67
+msgid "There are not enough cards left in the deck for new player to join."
+msgstr ""
+
+#: unobot/handlers/game_admin.py:72
+#, python-brace-format
+msgid "Added bot player {name} with {strategy} strategy."
+msgstr ""
+
+#: unobot/handlers/game_admin.py:74
+msgid "Stopped early because there are not enough cards left in the deck."
+msgstr ""
+
+#: unobot/handlers/game_admin.py:106 unobot/handlers/game_admin.py:194
+#: unobot/handlers/game_lobby.py:137 unobot/handlers/game_runtime.py:74
+#: unobot/services/actions.py:281
+msgid "Game ended!"
+msgstr ""
+
+#: unobot/handlers/game_admin.py:111 unobot/handlers/game_admin.py:151
 msgid ""
 "The game is not started yet. Join the game with /join and start the game "
 "with /start"
 msgstr ""
 
-#: bot.py:129 bot.py:281 bot.py:446 bot.py:473 bot.py:501 bot.py:530
-#, python-brace-format
-msgid "Only the game creator ({name}) and admin can do that."
-msgstr ""
-
-#: bot.py:146
-msgid "The lobby is closed"
-msgstr ""
-
-#: bot.py:150 bot.py:232
+#: unobot/handlers/game_admin.py:142 unobot/handlers/game_lobby.py:81
 msgid "No game is running at the moment. Create a new game with /new"
 msgstr ""
 
-#: bot.py:156
-msgid "You already joined the game. Start the game with /start"
+#: unobot/handlers/game_admin.py:172
+msgid "Please reply to the person you want to kick and type /kick again."
 msgstr ""
 
-#: bot.py:162
-msgid "There are not enough cards left in the deck for new players to join."
-msgstr ""
-
-#: bot.py:168
-msgid "Joined the game"
-msgstr ""
-
-#: bot.py:181 bot.py:193
-msgid "You are not playing in a game in this group."
-msgstr ""
-
-#: bot.py:204 bot.py:274
-#, python-brace-format
-msgid "Okay. Next Player: {name}"
-msgstr ""
-
-#: bot.py:210
-#, python-brace-format
-msgid "{name} left the game before it started."
-msgstr ""
-
-#: bot.py:253
+#: unobot/handlers/game_admin.py:185
 #, python-brace-format
 msgid "Player {name} is not found in the current game."
 msgstr ""
 
-#: bot.py:260 bot.py:265
+#: unobot/handlers/game_admin.py:193 unobot/handlers/game_admin.py:197
 #, python-brace-format
 msgid "{0} was kicked by {1}"
 msgstr ""
 
-#: bot.py:269
-msgid "Please reply to the person you want to kick and type /kick again."
+#: unobot/handlers/game_admin.py:199 unobot/handlers/game_lobby.py:144
+#, python-brace-format
+msgid "Okay. Next Player: {name}"
 msgstr ""
 
-#: bot.py:299
+#: unobot/handlers/game_admin.py:245
+msgid "Opened the lobby. New players may /join the game."
+msgstr ""
+
+#: unobot/handlers/game_admin.py:245
+msgid "Closed the lobby. No more players can join this game."
+msgstr ""
+
+#: unobot/handlers/game_admin.py:274
+msgid "Enabled multi-translations. Disable with /disable_translations"
+msgstr ""
+
+#: unobot/handlers/game_admin.py:274
+msgid ""
+"Disabled multi-translations. Enable them again with /enable_translations"
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:25
+msgid ""
+"Send this command in a group to be notified when a new game is started there."
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:47
+#, python-brace-format
+msgid "A new game has been started in {title}"
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:60
+msgid ""
+"Created a new game! Join the game with /join and start the game with /start"
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:76
+msgid "The lobby is closed"
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:88
+msgid "You already joined the game. Start the game with /start"
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:95
+msgid "There are not enough cards left in the deck for new players to join."
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:102
+msgid "Joined the game"
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:118 unobot/handlers/game_lobby.py:132
+msgid "You are not playing in a game in this group."
+msgstr ""
+
+#: unobot/handlers/game_lobby.py:155
+#, python-brace-format
+msgid "{name} left the game before it started."
+msgstr ""
+
+#: unobot/handlers/game_runtime.py:34
 msgid "Game not found."
 msgstr ""
 
-#: bot.py:304
+#: unobot/handlers/game_runtime.py:37
 msgid "Back to last group"
 msgstr ""
 
-#: bot.py:307
+#: unobot/handlers/game_runtime.py:40
 msgid "Please switch to the group you selected!"
 msgstr ""
 
-#: bot.py:313
+#: unobot/handlers/game_runtime.py:46
 #, python-brace-format
 msgid ""
 "Selected group: {group}\n"
 "<b>Make sure that you switch to the correct group!</b>"
 msgstr ""
 
-#: bot.py:343
+#: unobot/handlers/game_runtime.py:79
 #, python-brace-format
 msgid "Removing {name} from the game"
 msgstr ""
 
-#: bot.py:360
+#: unobot/handlers/game_runtime.py:99
 msgid "There is no game running in this chat. Create a new one with /new"
 msgstr ""
 
-#: bot.py:365
+#: unobot/handlers/game_runtime.py:104
 msgid "The game has already started"
 msgstr ""
 
-#: bot.py:369
+#: unobot/handlers/game_runtime.py:109
 #, python-brace-format
 msgid ""
 "At least {minplayers} players must /join the game before you can start it"
 msgstr ""
 
-#: bot.py:380
+#: unobot/handlers/game_runtime.py:118 unobot/services/actions.py:71
+#: unobot/services/actions.py:138
+msgid "Make your choice!"
+msgstr ""
+
+#: unobot/handlers/game_runtime.py:120
 #, python-brace-format
 msgid ""
 "First player: {name}\n"
@@ -194,191 +205,274 @@ msgid ""
 "Enable multi-translations with /enable_translations"
 msgstr ""
 
-#: bot.py:417
+#: unobot/handlers/game_runtime.py:147
 msgid "Please select the group you want to play in."
 msgstr ""
 
-#: bot.py:440
-msgid "Closed the lobby. No more players can join this game."
-msgstr ""
-
-#: bot.py:468
-msgid "Opened the lobby. New players may /join the game."
-msgstr ""
-
-#: bot.py:495
-msgid "Enabled multi-translations. Disable with /disable_translations"
-msgstr ""
-
-#: bot.py:523
-msgid ""
-"Disabled multi-translations. Enable them again with /enable_translations"
-msgstr ""
-
-#: bot.py:546
+#: unobot/handlers/game_runtime.py:163
 msgid "You are not playing in a game in this chat."
 msgstr ""
 
-#: bot.py:561
+#: unobot/handlers/game_runtime.py:175
 #, python-brace-format
 msgid "Please wait {time} second"
 msgid_plural "Please wait {time} seconds"
 msgstr[0] ""
 msgstr[1] ""
 
-#: bot.py:637
+#: unobot/handlers/inline.py:97
 #, python-brace-format
 msgid "Current game: {game}"
 msgstr ""
 
-#: bot.py:672
+#: unobot/handlers/inline.py:128
 #, python-brace-format
-msgid "Gamemode changed to {mode}"
+msgid "Game mode changed to {mode}"
 msgstr ""
 
-#: bot.py:678
+#: unobot/handlers/inline.py:136
 #, python-brace-format
 msgid "Cheat attempt by {name}"
 msgstr ""
 
-#: bot.py:697
-#, python-brace-format
-msgid "Next player: {name}"
-msgstr ""
-
-#: bot.py:709
+#: unobot/handlers/inline.py:167
 #, python-brace-format
 msgid "Waiting time for {name} has been reset to {time} seconds"
 msgstr ""
 
-#: results.py:39
+#: unobot/services/actions.py:72 unobot/services/actions.py:139
+#, python-brace-format
+msgid "Next player: {name}"
+msgstr ""
+
+#: unobot/services/actions.py:155
+#, python-brace-format
+msgid "{name} plays:"
+msgstr ""
+
+#: unobot/services/actions.py:164
+#, python-brace-format
+msgid "{name} draws {number} card."
+msgid_plural "{name} draws {number} cards."
+msgstr[0] ""
+msgstr[1] ""
+
+#: unobot/services/actions.py:172
+#, python-brace-format
+msgid "{name} passes."
+msgstr ""
+
+#: unobot/services/actions.py:177
+#, python-brace-format
+msgid "{name} chooses {color}."
+msgstr ""
+
+#: unobot/services/actions.py:216
+#, python-brace-format
+msgid "Waiting time to skip this player has been reduced to {time} seconds."
+msgstr ""
+
+#: unobot/services/actions.py:219
+#, python-brace-format
+msgid ""
+"Waiting time to skip this player has been reduced to {time} seconds.\n"
+"Next player: {name}"
+msgstr ""
+
+#: unobot/services/actions.py:232
+#, python-brace-format
+msgid "{name1} ran out of time and has been removed from the game!"
+msgstr ""
+
+#: unobot/services/actions.py:236
+#, python-brace-format
+msgid ""
+"{name1} ran out of time and has been removed from the game!\n"
+"Next player: {name2}"
+msgstr ""
+
+#: unobot/services/actions.py:244
+#, python-brace-format
+msgid ""
+"{name} ran out of time and has been removed from the game!\n"
+"The game ended."
+msgstr ""
+
+#: unobot/services/actions.py:269
+msgid "Please choose a color"
+msgstr ""
+
+#: unobot/services/actions.py:275
+#, python-brace-format
+msgid "{name} won!"
+msgstr ""
+
+#: unobot/services/actions.py:299 unobot/services/actions.py:317
+#: unobot/services/actions.py:326
+msgid "There are no more cards in the deck."
+msgstr ""
+
+#: unobot/services/actions.py:311
+#, python-brace-format
+msgid "Bluff called! Giving 4 cards to {name}"
+msgstr ""
+
+#: unobot/services/actions.py:321
+#, python-brace-format
+msgid "{name1} didn't bluff! Giving {num} cards to {name2}"
+msgstr ""
+
+#: unobot/ui/results.py:60
 msgid "Choose Color"
 msgstr ""
 
-#: results.py:53
+#: unobot/ui/results.py:74
 msgid "Card (tap for game state):"
 msgid_plural "Cards (tap for game state):"
 msgstr[0] ""
 msgstr[1] ""
 
-#: results.py:64
+#: unobot/ui/results.py:85
 #, python-brace-format
 msgid "{name} ({number} card)"
 msgid_plural "{name} ({number} cards)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: results.py:76
+#: unobot/ui/results.py:94
 msgid "You are not playing"
 msgstr ""
 
-#: results.py:78
+#: unobot/ui/results.py:96
 msgid ""
 "Not playing right now. Use /new to start a game or /join to join the current "
 "game in this group"
 msgstr ""
 
-#: results.py:90
+#: unobot/ui/results.py:108
 msgid "The game wasn't started yet"
 msgstr ""
 
-#: results.py:92
+#: unobot/ui/results.py:110
 msgid "Start the game with /start"
 msgstr ""
 
-#: results.py:102
+#: unobot/ui/results.py:120
 msgid "🎻 Classic mode"
 msgstr ""
 
-#: results.py:104
+#: unobot/ui/results.py:122
 msgid "Classic 🎻"
 msgstr ""
 
-#: results.py:114
+#: unobot/ui/results.py:132
 msgid "🚀 Sonic mode"
 msgstr ""
 
-#: results.py:116
+#: unobot/ui/results.py:134
 msgid "Gotta go fast! 🚀"
 msgstr ""
 
-#: results.py:126
+#: unobot/ui/results.py:144
 msgid "🐉 Wild mode"
 msgstr ""
 
-#: results.py:128
+#: unobot/ui/results.py:146
 msgid "Into the Wild~ 🐉"
 msgstr ""
 
-#: results.py:141
+#: unobot/ui/results.py:153
+msgid "🌋 Volcano mode 🌋"
+msgstr ""
+
+#: unobot/ui/results.py:154
+msgid "KABOOM!!! 🌋"
+msgstr ""
+
+#: unobot/ui/results.py:162
+msgid "✍️ Text mode"
+msgstr ""
+
+#: unobot/ui/results.py:164
+msgid "Text ✍️"
+msgstr ""
+
+#: unobot/ui/results.py:174
 #, python-brace-format
 msgid "Drawing {number} card"
 msgid_plural "Drawing {number} cards"
 msgstr[0] ""
 msgstr[1] ""
 
-#: results.py:167
+#: unobot/ui/results.py:199
 msgid "Pass"
 msgstr ""
 
-#: results.py:180
+#: unobot/ui/results.py:212
 msgid "I'm calling your bluff!"
 msgstr ""
 
-#: results.py:203
+#: unobot/ui/results.py:230
+msgid "Tap to play this card"
+msgstr ""
+
+#: unobot/ui/results.py:249
+msgid "You can't play this card right now"
+msgstr ""
+
+#: unobot/ui/results.py:266
 #, python-brace-format
 msgid "Current player: {name}"
 msgstr ""
 
-#: results.py:206
+#: unobot/ui/results.py:267
 #, python-brace-format
 msgid "Last card: {card}"
 msgstr ""
 
-#: results.py:208
-#, python-brace-format
-msgid "Player: {player_list}"
-msgid_plural "Players: {player_list}"
+#: unobot/ui/results.py:268
+msgid "Player:"
+msgid_plural "Players:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: settings.py:37
+#: unobot/ui/settings.py:36
 msgid "Please edit your settings in a private chat with the bot."
 msgstr ""
 
-#: settings.py:47
+#: unobot/ui/settings.py:45
 msgid "Enable statistics"
 msgstr ""
 
-#: settings.py:49
+#: unobot/ui/settings.py:47
 msgid "Delete all statistics"
 msgstr ""
 
-#: settings.py:51
+#: unobot/ui/settings.py:49
 msgid "Language"
 msgstr ""
 
-#: settings.py:52
+#: unobot/ui/settings.py:50
 msgid "Settings"
 msgstr ""
 
-#: settings.py:66
+#: unobot/ui/settings.py:66
 msgid "Enabled statistics!"
 msgstr ""
 
-#: settings.py:72
+#: unobot/ui/settings.py:70
 msgid "Select locale"
 msgstr ""
 
-#: settings.py:82
+#: unobot/ui/settings.py:78
 msgid "Deleted and disabled statistics!"
 msgstr ""
 
-#: settings.py:95
+#: unobot/ui/settings.py:95
 msgid "Set locale!"
 msgstr ""
 
-#: simple_commands.py:31
+#: unobot/ui/simple_commands.py:33
 msgid ""
 "Follow these steps:\n"
 "\n"
@@ -398,6 +492,7 @@ msgid ""
 "\n"
 "<b>Language</b> and other settings: /settings\n"
 "Other commands (only game creator):\n"
+"/add_bot - Add one or more bot players\n"
 "/close - Close lobby\n"
 "/open - Open lobby\n"
 "/kill - Terminate the game\n"
@@ -414,9 +509,9 @@ msgid ""
 "unobotnews\">update channel</a> and buy an UNO card game."
 msgstr ""
 
-#: simple_commands.py:73
+#: unobot/ui/simple_commands.py:79
 msgid ""
-"This UNO bot has three game modes: Classic, Sonic and Wild.\n"
+"This UNO bot has five game modes: Classic, Sonic, Wild, Volcano and Text.\n"
 "\n"
 " 🎻 The Classic mode uses the conventional UNO deck and there is no auto "
 "skip.\n"
@@ -424,19 +519,24 @@ msgid ""
 "skips a player if he/she takes too long to play its turn\n"
 " 🐉 The Wild mode uses a deck with more special cards, less number variety "
 "and no auto skip.\n"
+" 🌋 The Volcano mode gives four cards when the player draws with a given "
+"probability.\n"
+" ✍️ The Text mode uses the conventional UNO deck but instead of stickers it "
+"uses the text.\n"
 "\n"
 "To change the game mode, the GAME CREATOR has to type the bot nickname and a "
-"space, just like when playing a card, and all game mode options should appear."
+"space, just like when playing a card, and all game mode options should "
+"appear."
 msgstr ""
 
-#: simple_commands.py:85
+#: unobot/ui/simple_commands.py:93
 msgid ""
 "This bot is Free Software and licensed under the AGPL. The code is available "
 "here: \n"
 "https://github.com/jh0ker/mau_mau_bot"
 msgstr ""
 
-#: simple_commands.py:88
+#: unobot/ui/simple_commands.py:96
 msgid ""
 "Attributions:\n"
 "Draw icon by <a href=\"http://www.faithtoken.com/\">Faithtoken</a>\n"
@@ -445,53 +545,33 @@ msgid ""
 "Icons edited by ɳick"
 msgstr ""
 
-#: simple_commands.py:105
+#: unobot/ui/simple_commands.py:113
 msgid "All news here: https://telegram.me/unobotnews"
 msgstr ""
 
-#: simple_commands.py:115
+#: unobot/ui/simple_commands.py:123
 msgid ""
 "You did not enable statistics. Use /settings in a private chat with the bot "
 "to enable them."
 msgstr ""
 
-#: simple_commands.py:122
+#: unobot/ui/simple_commands.py:130
 #, python-brace-format
 msgid "{number} game played"
 msgid_plural "{number} games played"
 msgstr[0] ""
 msgstr[1] ""
 
-#: simple_commands.py:129
+#: unobot/ui/simple_commands.py:138
 #, python-brace-format
 msgid "{number} first place ({percent}%)"
 msgid_plural "{number} first places ({percent}%)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: simple_commands.py:136
+#: unobot/ui/simple_commands.py:145
 #, python-brace-format
 msgid "{number} card played"
 msgid_plural "{number} cards played"
 msgstr[0] ""
 msgstr[1] ""
-
-#: utils.py:55 utils.py:67
-#, python-brace-format
-msgid "{emoji} Red"
-msgstr ""
-
-#: utils.py:57 utils.py:70
-#, python-brace-format
-msgid "{emoji} Blue"
-msgstr ""
-
-#: utils.py:59 utils.py:73
-#, python-brace-format
-msgid "{emoji} Green"
-msgstr ""
-
-#: utils.py:61 utils.py:76
-#, python-brace-format
-msgid "{emoji} Yellow"
-msgstr ""

@@ -22,6 +22,8 @@ import gettext
 import inspect
 from functools import wraps
 
+from telegram.ext import ExtBot
+
 from locales import available_locales
 from pony.orm import db_session
 from unobot.persistence.user_setting import UserSetting
@@ -32,17 +34,11 @@ GETTEXT_DIR = 'locales'
 
 
 class _Underscore(object):
-    """Class to emulate flufl.i18n behaviour, but with plural support"""
+    """Class to emulate flufl.i18n behavior, but with plural support"""
     def __init__(self):
         self.translators = {
-            locale: gettext.GNUTranslations(
-                open(gettext.find(
-                    GETTEXT_DOMAIN, GETTEXT_DIR, languages=[locale]
-                ), 'rb')
-            )
-            for locale
-            in available_locales.keys()
-            if locale != 'en_US'  # No translation file for en_US
+            locale: gettext.GNUTranslations(open(gettext.find(GETTEXT_DOMAIN, GETTEXT_DIR, languages=[locale]), 'rb'))
+                for locale in available_locales.keys() if locale != 'en_US'
         }
         self.locale_stack = list()
 
@@ -149,6 +145,38 @@ def game_locales(func):
                     locales.append(loc)
 
             result = func(update, context, *pargs, **kwargs)
+
+        if inspect.isawaitable(result):
+            result = await result
+
+        while _.code:
+            _.pop()
+
+        return result
+    return wrapped
+
+
+def bot_locales(func):
+    @wraps(func)
+    async def wrapped(bot, game, job_queue, *pargs, **kwargs):
+        with db_session:
+            locales = list()
+            if game:
+                for player in game.players:
+                    us = UserSetting.get(id=player.user.id)
+
+                    if us and us.lang != 'en':
+                        loc = us.lang
+                    else:
+                        loc = 'en_US'
+
+                    if loc in locales:
+                        continue
+
+                    _.push(loc)
+                    locales.append(loc)
+
+            result = func(bot, game, job_queue, *pargs, **kwargs)
 
         if inspect.isawaitable(result):
             result = await result

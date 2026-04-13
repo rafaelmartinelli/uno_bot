@@ -16,7 +16,7 @@ from apscheduler.jobstores.base import JobLookupError
 from unobot.bots import get_strategy, is_bot_user
 from unobot.infra.config import BOT_ACTION_DELAY, TIME_REMOVAL_AFTER_SKIP, MIN_FAST_TURN_TIME, VOLCANO_PROBABILITY
 from unobot.common.errors import DeckEmptyError, NotEnoughPlayersError
-from unobot.i18n.internationalization import __
+from unobot.i18n.internationalization import __, bot_locales
 from unobot.infra.shared_vars import gm
 from unobot.persistence.user_setting import UserSetting
 from unobot.common.utils import (
@@ -141,6 +141,7 @@ async def _announce_next_player_async(bot, game):
         disable_web_page_preview=True)
 
 
+@bot_locales
 async def _perform_bot_turn(bot, game, job_queue):
     if not game_is_running(game) or not is_bot_user(game.current_player.user):
         return
